@@ -511,6 +511,9 @@ def get_stage_coords(filenames):
         reader.setFlattenedResolutions(False)
         ome_meta = MetadataTools.createOMEXMLMetadata()
         reader.setMetadataStore(ome_meta)
+        m = DynamicMetadataOptions()
+        m.setBoolean(ZeissCZIReader.ALLOW_AUTOSTITCHING_KEY, False)
+        reader.setMetadataOptions(m)
         reader.setId(str(image))
         series_count = reader.getSeriesCount()
 
