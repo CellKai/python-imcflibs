@@ -374,7 +374,7 @@ def get_reader(path_to_file, setFlattenedResolutions=False):
     m.setBoolean(ZeissCZIReader.ALLOW_AUTOSTITCHING_KEY, False)
     reader.setMetadataOptions(m)
     reader.setId(str(path_to_file))
-    return reader
+    return reader, ome_meta
 
 
 def get_series_info_from_ome_metadata(path_to_file, skip_labels=False):
@@ -403,7 +403,7 @@ def get_series_info_from_ome_metadata(path_to_file, skip_labels=False):
     >>> count, indices = get_series_info_from_ome_metadata("image.nd2", skip_labels=True)
     """
 
-    reader = get_reader(path_to_file, skip_labels)
+    reader, ome_meta = get_reader(path_to_file, skip_labels)
     series_count = reader.getSeriesCount()
     if skip_labels:
         # If we are not skipping labels, return the full range
@@ -464,7 +464,7 @@ def get_metadata_from_file(path_to_image):
         An instance of `imcflibs.imagej.bioformats.ImageMetadata` containing the extracted metadata.
     """
 
-    reader = get_reader(path_to_image)
+    reader, ome_meta = get_reader(path_to_image)
 
     metadata = ImageMetadata(
         unit_width=ome_meta.getPixelsPhysicalSizeX(0).value(),
@@ -515,8 +515,8 @@ def get_stage_coords(filenames):
     max_phys_size_y = 0.0
     max_phys_size_z = 0.0
 
-    for counter, path_to_image in enumerate(filenames):
-        reader = get_reader(path_to_image)
+    for counter, image in enumerate(filenames):
+        reader, ome_meta = get_reader(image)
         series_count = reader.getSeriesCount()
 
         # Process only the first image to get values not dependent on series
