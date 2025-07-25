@@ -1593,14 +1593,21 @@ def fuse_dataset(
 def fuse_dataset_bdvp(
     project_path,
     command,
-    processing_opts=None,
     result_path=None,
-    compression="LZW",
+    range_channels="",
+    range_slices="",
+    range_frames="",
+    n_resolution_levels=5,
+    split_slices=False,
+    split_channels=False,
+    split_frames=False,
+    override_z_ratio=False,
+    z_ratio=1.0,
 ):
     """Export a BigDataViewer project using the BIOP Kheops exporter.
 
-    Use the BIOP Kheops exporter to convert a BigDataViewer project into
-    OME-TIFF files, with optional compression.
+    Use BIOP Kheops exporter to fuse a BigDataViewer project and save
+    it as pyramidal OME-TIFF.
 
     Parameters
     ----------
@@ -1608,43 +1615,70 @@ def fuse_dataset_bdvp(
         Full path to the BigDataViewer XML project file.
     command : CommandService
         The Scijava CommandService instance to execute the export command.
-    processing_opts : ProcessingOptions, optional
-        Options defining which parts of the dataset to process. If None, default
-        processing options will be used (process all angles, channels, etc.).
     result_path : str, optional
         Path where to store the exported files. If None, files will be saved in
         the same directory as the input project.
-    compression : str, optional
-        Compression method to use for the TIFF files. Default is "LZW".
+    range_channels : str, optional
+        Channels to include in the export. Default is all channels.
+    range_slices : str, optional
+        Slices to include in the export. Default is all slices.
+    range_frames : str, optional
+        Frames to include in the export. Default is all frames.
+    n_resolution_levels : int, optional
+        Number of pyramid resolution levels to use for the export. Default is 5.
+    split_slices : bool, optional
+        If True, splits the output into separate files for each slice. Default is False.
+    split_channels : bool, optional
+        If True, splits the output into separate files for each channel. Default is False.
+    split_frames : bool, optional
+        If True, splits the output into separate files for each frame. Default is False.
+    override_z_ratio : bool, optional
+        If True, overrides the default z_ratio value. Default is False.
+    z_ratio : float, optional
+        The z ratio to use for the export. Default is 1.0.
 
     Notes
     -----
     This function requires the PTBIOP update site to be enabled in Fiji/ImageJ.
+
+    Examples
+    --------
+    fuse_dataset_bdvp(xml_input, cs)
     """
-    if processing_opts is None:
-        processing_opts = ProcessingOptions()
 
     file_info = pathtools.parse_path(project_path)
     if not result_path:
         result_path = file_info["path"]
-        # if not os.path.exists(result_path):
-        #     os.makedirs(result_path)
 
     command.run(
         FuseBigStitcherDatasetIntoOMETiffCommand,
         True,
-        "image",
+        "xml_bigstitcher_file",
         project_path,
-        "output_dir",
+        "output_path_directory",
         result_path,
-        "compression",
-        compression,
-        "subset_channels",
-        "",
-        "subset_slices",
-        "",
-        "subset_frames",
-        "",
-        "compress_temp_files",
-        False,
+        "range_channels",
+        range_channels,
+        "range_slices",
+        range_slices,
+        "range_frames",
+        range_frames,
+        "n_resolution_levels",
+        n_resolution_levels,
+        "fusion_method",
+        "SMOOTH AVERAGE",
+        "use_lzw_compression",
+        True,
+        "split_slices",
+        split_slices,
+        "split_channels",
+        split_channels,
+        "split_frames",
+        split_frames,
+        "override_z_ratio",
+        override_z_ratio,
+        "z_ratio",
+        z_ratio,
+        "use_interpolation",
+        True,
     )
