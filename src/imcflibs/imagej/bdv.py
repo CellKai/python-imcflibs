@@ -1598,11 +1598,13 @@ def fuse_dataset_bdvp(
     range_slices="",
     range_frames="",
     n_resolution_levels=5,
+    use_lzw_compression=True,
     split_slices=False,
     split_channels=False,
     split_frames=False,
     override_z_ratio=False,
     z_ratio=1.0,
+    use_interpolation=True,
 ):
     """Export a BigDataViewer project using the BIOP Kheops exporter.
 
@@ -1626,6 +1628,8 @@ def fuse_dataset_bdvp(
         Frames to include in the export. Default is all frames.
     n_resolution_levels : int, optional
         Number of pyramid resolution levels to use for the export. Default is 5.
+    use_lzw_compression : bool, optional
+        If True, compressed the output file using LZW. Default is True.
     split_slices : bool, optional
         If True, splits the output into separate files for each slice. Default is False.
     split_channels : bool, optional
@@ -1636,6 +1640,8 @@ def fuse_dataset_bdvp(
         If True, overrides the default z_ratio value. Default is False.
     z_ratio : float, optional
         The z ratio to use for the export. Default is 1.0.
+    use_interpolation : bool, optional
+        If True, interpolates during fusion (takes ~4x longer). Default is True.
 
     Notes
     -----
@@ -1668,7 +1674,7 @@ def fuse_dataset_bdvp(
         "fusion_method",
         "SMOOTH AVERAGE",
         "use_lzw_compression",
-        True,
+        use_lzw_compression,
         "split_slices",
         split_slices,
         "split_channels",
@@ -1680,5 +1686,5 @@ def fuse_dataset_bdvp(
         "z_ratio",
         z_ratio,
         "use_interpolation",
-        True,
+        use_interpolation,
     )
