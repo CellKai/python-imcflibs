@@ -846,6 +846,12 @@ def define_dataset_auto(
         hdf5_chunk_sizes = "hdf5_chunk_sizes=" + hdf5_chunk_sizes + " "
     else:
         hdf5_chunk_sizes = ""
+    if timepoints_per_partition > 0:
+        split_timepoints = "split_hdf5 timepoints_per_partition=" + str(
+            timepoints_per_partition
+        )
+    else:
+        split_timepoints = ""
 
     if bf_series_type == "Angles":
         angle_rotation = "apply_angle_rotation "
@@ -883,9 +889,7 @@ def define_dataset_auto(
         + angle_rotation
         + subsampling_factors
         + hdf5_chunk_sizes
-        + "split_hdf5 "
-        + "timepoints_per_partition="
-        + str(timepoints_per_partition)
+        + split_timepoints
         + " "
         + "setups_per_partition=0 "
         + "use_deflate_compression "
