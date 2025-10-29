@@ -7,6 +7,7 @@ import smtplib
 import subprocess
 import sys
 import time
+from org.scijava.script import ScriptModule
 
 from ij import IJ  # pylint: disable-msg=import-error
 from ij.plugin import Duplicator, ImageCalculator, StackWriter
@@ -701,3 +702,35 @@ def run_imarisconvert(file_path):
         IJ.log("Conversion to .ims is finished.")
     else:
         IJ.log("Conversion failed with error code: %d" % result)
+    
+
+def save_script_parameters(destination, save_file_name="script_parameters.txt"):
+    """Save all Fiji script parameters to a text file.
+
+    Parameters
+    ----------
+    destination : str
+        Directory where the script parameters file will be saved.
+    save_file_name : str, optional
+        Name of the script parameters file, by default "script_parameters.txt".
+    """
+    # Get the ScriptModule object from globals made by Fiji
+    module = globals().get("org.scijava.script.ScriptModule")
+    if module is None:
+        print("No ScriptModule found- skipping saving script parameters.")
+        return
+
+    # Retrieve the input parameters from the scijava module
+    inputs = module.getInputs()
+    destination = str(destination)
+    out_path = os.path.join(destination, save_file_name)
+    
+    # Write the parameters to output file
+    with open(out_path, "w") as f:
+        for key in inputs.keySet():
+            val = inputs.get(key)
+            f.write("%s: %s\n" % (key, str(val)))
+
+    print("Saved script parameters to: %s" % out_path)
+
+
