@@ -726,8 +726,11 @@ def save_script_parameters(destination, save_file_name="script_parameters.txt"):
     out_path = os.path.join(destination, save_file_name)
     
     # Write the parameters to output file
+    skip_keys = ["PASSWORD", "USERNAME", "SJLOG", "COMMAND", "RM"]
     with open(out_path, "w") as f:
         for key in inputs.keySet():
+            if any(s in key.upper() for s in skip_keys):
+                continue
             val = inputs.get(key)
             f.write("%s: %s\n" % (key, str(val)))
 
