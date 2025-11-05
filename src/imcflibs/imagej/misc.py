@@ -7,7 +7,6 @@ import smtplib
 import subprocess
 import sys
 import time
-from org.scijava.script import ScriptModule
 
 from ij import IJ  # pylint: disable-msg=import-error
 from ij.plugin import Duplicator, ImageCalculator, StackWriter
