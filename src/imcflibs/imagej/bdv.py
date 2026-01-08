@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 
+from bdv.util.source.fused import AlphaFusedResampledSource
 from ch.epfl.biop.scijava.command.spimdata import (
     FuseBigStitcherDatasetIntoOMETiffCommand,
 )
@@ -20,7 +21,6 @@ from ij import IJ
 
 from .. import pathtools
 from ..log import LOG as log
-
 
 # internal template strings used in string formatting (note: the `"""@private"""`
 # pseudo-decorator is there to instruct [pdoc] to omit those variables when generating
@@ -902,6 +902,7 @@ def define_dataset_manual(
     image_file_pattern,
     dataset_organisation,
     definition_opts=None,
+    list_files=None,
 ):
     """Run "Define Multi-View Dataset" using the "Manual Loader" option.
 
@@ -920,20 +921,26 @@ def define_dataset_manual(
         Looks like "timepoints_=%s-%s channels_=0-%s tiles_=%s-%s"
     definition_opts : dict
         Dictionary containing the details about the file repartitions.
+    list_files : list of str, optional
+        If provided, a list of file names to pass directly to the manual
+        loader in "show_list" mode. When `list_files` is given the
+        function will include the filenames in the options string instead
+        of relying on a file pattern; items should be either basenames or
+        paths appropriate for the selected ``image_file_directory``.
+
     """
 
-    xml_filename = project_filename + ".xml"
+    # xml_filename = project_filename + ".xml"
 
     if definition_opts is None:
-        definition_opts = DefinitionOptions()
+        definition_opts = bdv.DefinitionOptions()
 
-    temp = os.path.join(source_directory, project_filename + "_temp")
-    os.path.join(temp, project_filename)
+    show_list_options = "" if not list_files else "show_list " + " ".join(list_files)
 
     options = (
         "define_dataset=[Manual Loader (Bioformats based)] "
         + "project_filename=["
-        + xml_filename
+        + project_filename
         + "] "
         + "_____"
         + definition_opts.fmt_acitt_options()
@@ -943,11 +950,12 @@ def define_dataset_manual(
         + " "
         + "image_file_pattern="
         + image_file_pattern
+        + " "
         + dataset_organisation
         + " "
         + "calibration_type=[Same voxel-size for all views] "
         + "calibration_definition=[Load voxel-size(s) from file(s)] "
-        # + "imglib2_data_container=[ArrayImg (faster)]"
+        + show_list_options
     )
 
     log.debug("Manual dataset definition options: <%s>", options)
@@ -991,7 +999,7 @@ def resave_as_h5(
     """
 
     if not processing_opts:
-        processing_opts = ProcessingOptions()
+        processing_opts = bdv.ProcessingOptions()
 
     if use_deflate_compression:
         use_deflate_compression_arg = "use_deflate_compression "
@@ -1032,7 +1040,7 @@ def resave_as_h5(
     )
 
     log.debug("Resave as HDF5 options: <%s>", options)
-    IJ.run("As HDF5", str(options))
+    IJ.run("Resave as HDF5 (local)", str(options))
 
 
 def flip_axes(source_xml_file, x=False, y=True, z=False):
@@ -1593,14 +1601,17 @@ def fuse_dataset(
 def fuse_dataset_bdvp(
     project_path,
     command,
-    processing_opts=None,
     result_path=None,
-    compression="LZW",
+    n_resolution_levels=5,
+    use_lzw_compression=True,
+    fusion_method="SMOOTH " + AlphaFusedResampledSource.AVERAGE,
 ):
     """Export a BigDataViewer project using the BIOP Kheops exporter.
 
-    Use the BIOP Kheops exporter to convert a BigDataViewer project into
-    OME-TIFF files, with optional compression.
+    Convert a BigDataViewer project into OME-TIFF files using the BIOP
+    Kheops exporter. This wraps the Scijava export command and allows
+    setting the output directory, compression and number of resolution
+    levels.
 
     Parameters
     ----------
@@ -1608,43 +1619,82 @@ def fuse_dataset_bdvp(
         Full path to the BigDataViewer XML project file.
     command : CommandService
         The Scijava CommandService instance to execute the export command.
-    processing_opts : ProcessingOptions, optional
-        Options defining which parts of the dataset to process. If None, default
-        processing options will be used (process all angles, channels, etc.).
     result_path : str, optional
-        Path where to store the exported files. If None, files will be saved in
-        the same directory as the input project.
-    compression : str, optional
-        Compression method to use for the TIFF files. Default is "LZW".
+        Path where to store the exported files. If ``None``, files will be
+        saved in the same directory as the input project.
+    n_resolution_levels : int, optional
+        Number of resolution levels to export (default 5).
+    use_lzw_compression : bool, optional
+        Whether to use LZW compression for the output TIFFs (default True).
+    fusion_method : str, optional
+        Fusion method to use for exporting (default ``"SMOOTH AVERAGE"``).
 
     Notes
     -----
-    This function requires the PTBIOP update site to be enabled in Fiji/ImageJ.
+    This function requires the PTBIOP update site to be enabled in Fiji/
+    ImageJ.
+
     """
-    if processing_opts is None:
-        processing_opts = ProcessingOptions()
 
     file_info = pathtools.parse_path(project_path)
+
     if not result_path:
         result_path = file_info["path"]
-        # if not os.path.exists(result_path):
-        #     os.makedirs(result_path)
 
     command.run(
         FuseBigStitcherDatasetIntoOMETiffCommand,
-        True,
-        "image",
-        project_path,
-        "output_dir",
-        result_path,
-        "compression",
-        compression,
-        "subset_channels",
-        "",
-        "subset_slices",
-        "",
-        "subset_frames",
-        "",
-        "compress_temp_files",
         False,
-    )
+        "xml_bigstitcher_file",
+        project_path,
+        "output_path_directory",
+        result_path,
+        "n_resolution_levels",
+        n_resolution_levels,
+        "use_lzw_compression",
+        use_lzw_compression,
+        "fusion_method",
+        fusion_method,
+    ).get()
+
+
+def join_files_with_channel_suffix(files, nchannels):
+    """Join filenames and append channel-suffixed copies.
+
+    For each filename in ``files``, return a list where original filenames
+    appear first followed by copies with suffixes ``_0`` .. ``_{n-2}``
+    (inserted before the file extension). This is suitable for passing
+    to Bioformats/Jython in ``show_list`` mode when each channel is stored
+    as a separate file.
+
+    Parameters
+    ----------
+    files : list or tuple
+        List or tuple of filename strings.
+    nchannels : int
+        Number of channels (>=1). If ``nchannels`` is 1 no suffixed copies
+        are added.
+
+    Returns
+    -------
+    list of str
+        Ordered list of filenames (originals then suffixed copies).
+    """
+    import os
+
+    if not files:
+        return ""
+    try:
+        x = range(int(nchannels) - 1)
+    except Exception:
+        x = [0]
+    suff = "_" + str(x)
+    out = []
+    # keep original order, then add suffixed copies
+    for f in files:
+        out.append(f)
+    for i in x:
+        suff = "_" + str(i)
+        for f in files:
+            base, ext = os.path.splitext(f)
+            out.append(base + suff + ext)
+    return out
