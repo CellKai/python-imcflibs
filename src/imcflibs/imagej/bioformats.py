@@ -235,7 +235,7 @@ def import_image(
         t_start and t_end.
     region : list, optional
         Bio-Formats crop region, by default None.
-        Format = [start_x, start_y, width in px, height in px]
+        Format: `[start_x, start_y, width_in_px, height_in_px]`.
 
     Returns
     -------
