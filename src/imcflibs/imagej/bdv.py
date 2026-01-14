@@ -812,8 +812,9 @@ def define_dataset_auto(
         Defines how Bio-Formats interprets the series.
     timepoints_per_partition : int, optional
         Split the output dataset by timepoints. Use `0` for no split, resulting
-        in a single HDF5 file containing all timepoints. By default `1`,
-        resulting in a HDF5 per timepoints.
+        in a single HDF5 file containing all timepoints. Otherwise, choose the
+        number of timepoints per file. By default `0`.
+    
     resave : str, optional
         Allow the function to either re-save the images or simply create a
         merged xml. Use `Load raw data` to avoid re-saving, by default `Re-save
