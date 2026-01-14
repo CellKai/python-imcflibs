@@ -236,16 +236,16 @@ def spot_filtering(
 
 
 def set_spotfilter(settings, filter_key, filter_value):
-    """Sets a TrackMate spot filter with specified filter key and values.
+    """Set a TrackMate spot filter with specified filter key and values.
 
     Parameters
     ----------
     settings : fiji.plugin.trackmate.Settings
         Dictionary containing all the settings to use for TrackMate.
-    filter_name : str
+    filter_key : str
         The name of the filter to be applied. You must use the keys of the features, not their name.
-          Here is the table of the feature keys and names for the spot features:
-          https://imagej.net/plugins/trackmate/scripting/trackmate-detectors-trackers-keys
+        Here is the table of the feature keys and names for the spot features:
+        https://imagej.net/plugins/trackmate/scripting/trackmate-detectors-trackers-keys
     filter_value : list
         A list containing two values for the filter. The first value is
         applied as an above-threshold filter, and the second as a below-threshold filter.
