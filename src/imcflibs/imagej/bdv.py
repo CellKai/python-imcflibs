@@ -1670,7 +1670,7 @@ def fuse_dataset_bdvp(
 
     command.run(
         FuseBigStitcherDatasetIntoOMETiffCommand,
-        True,  # From my understanding, this boolean indicates whether to run the command headless or not.
+        True,  # seems to indicate whether to run the command headless or not
         "xml_bigstitcher_file",
         project_path,
         "output_path_directory",
