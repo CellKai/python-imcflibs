@@ -24,9 +24,10 @@ def preset_results_column(results_table, column, value):
 def add_results_to_resultstable(results_table, column, values, rows=None):
     """Add values to the ResultsTable in a specified column.
 
-    This function can work in two ways:
-    1. If rows=None: adds values sequentially starting from row 0.
-    2. If rows is provided: adds values to specific row indices.
+    This function works in two ways, depending on the value of `rows`:
+
+    1. If rows is `None`, it adds values sequentially starting from row 0.
+    2. If rows is a list of int, it adds values to the given row indices.
 
     Parameters
     ----------
@@ -42,8 +43,8 @@ def add_results_to_resultstable(results_table, column, values, rows=None):
 
     Examples
     --------
-    # Add the same value (42) to a given ResultsTable to specific rows (1, 3, 5)
-    add_results_to_resultstable(rt, "Intensity", 42, rows=[1, 3, 5])
+    To add the same value (42) to a given `ResultsTable` to rows 1, 3 and 5:
+    >>> add_results_to_resultstable(rt, "Intensity", 42, rows=[1, 3, 5])
     """
     if not isinstance(values, list) and rows is not None:
         values = [values] * len(rows)
