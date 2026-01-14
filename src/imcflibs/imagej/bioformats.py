@@ -405,7 +405,7 @@ def get_series_info_from_ome_metadata(path_to_file, skip_labels=False):
 
     reader, ome_meta = get_reader(path_to_file, skip_labels)
     series_count = reader.getSeriesCount()
-    if skip_labels:
+    if not skip_labels:
         # If we are not skipping labels, return the full range
         return series_count, range(series_count)
 
