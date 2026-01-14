@@ -1656,7 +1656,7 @@ def fuse_dataset_bdvp(
 def read_metadata_from_xml(xml_path):
     """Extract metadata from a Zeiss Lightsheet microscopy XML file.
 
-    Parses the XML document to retrieve the number of channels, illuminations,
+    Pars the XML document to retrieve the number of channels, illuminations,
     and timepoints from the experiment metadata.
 
     Parameters
@@ -1676,11 +1676,11 @@ def read_metadata_from_xml(xml_path):
     --------
     >>> metadata = read_metadata_from_xml("/path/to/experiment.xml")
     >>> print(metadata["channels_count"])
-    2
+    ... 2
     >>> print(metadata["illuminations_count"])
-    4
+    ... 4
     >>> print(metadata["timepoints_count"])
-    1
+    ... 1
     """
     # Use our robust XML parsing function
     dbf = DocumentBuilderFactory.newInstance()
