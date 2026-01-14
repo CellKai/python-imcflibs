@@ -16,6 +16,9 @@ from ..log import LOG as log
 from . import bioformats as bf
 from . import prefs
 
+from org.scijava.widget import WidgetStyle
+from org.scijava.widget import TextWidget
+
 
 def show_status(msg):
     """Update the ImageJ status bar and issue a log message.
@@ -746,9 +749,8 @@ def save_script_parameters(destination, save_file_name="script_parameters.txt"):
             if any(skip in key.upper() for skip in skip_keys):
                 continue
 
-            # Skip if parameter is declared with style="password"
-            style = item.getWidgetStyle()
-            if style is not None and style.lower() == "password":
+            # Skip if parameter is declared with password style
+            if WidgetStyle.isStyle(item, TextWidget.PASSWORD_STYLE):
                 continue
 
             if inputs.containsKey(key):
