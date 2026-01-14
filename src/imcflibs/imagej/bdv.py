@@ -789,7 +789,7 @@ def define_dataset_auto(
     file_path,
     bf_series_type,
     dataset_save_path=None,
-    timepoints_per_partition=1,
+    timepoints_per_partition=0,
     resave="Re-save as multiresolution HDF5",
     subsampling_factors=None,
     hdf5_chunk_sizes=None,
