@@ -13,7 +13,6 @@ import os
 import shutil
 import sys
 
-from bdv.util.source.fused import AlphaFusedResampledSource
 from ch.epfl.biop.scijava.command.spimdata import (
     FuseBigStitcherDatasetIntoOMETiffCommand,
 )
@@ -1602,16 +1601,23 @@ def fuse_dataset_bdvp(
     project_path,
     command,
     result_path=None,
+    fusion_method="SMOOTH AVERAGE",
+    range_channels="",
+    range_slices="",
+    range_frames="",
     n_resolution_levels=5,
     use_lzw_compression=True,
-    fusion_method="SMOOTH " + AlphaFusedResampledSource.AVERAGE,
+    split_slices=False,
+    split_channels=False,
+    split_frames=False,
+    override_z_ratio=False,
+    z_ratio=1.0,
+    use_interpolation=True,
 ):
     """Export a BigDataViewer project using the BIOP Kheops exporter.
 
-    Convert a BigDataViewer project into OME-TIFF files using the BIOP
-    Kheops exporter. This wraps the Scijava export command and allows
-    setting the output directory, compression and number of resolution
-    levels.
+    Use BIOP Kheops exporter to fuse a BigDataViewer project and save
+    it as pyramidal OME-TIFF.
 
     Parameters
     ----------
@@ -1622,18 +1628,39 @@ def fuse_dataset_bdvp(
     result_path : str, optional
         Path where to store the exported files. If ``None``, files will be
         saved in the same directory as the input project.
-    n_resolution_levels : int, optional
-        Number of resolution levels to export (default 5).
-    use_lzw_compression : bool, optional
-        Whether to use LZW compression for the output TIFFs (default True).
     fusion_method : str, optional
         Fusion method to use for exporting (default ``"SMOOTH AVERAGE"``).
+    range_channels : str, optional
+        Channels to include in the export. Default is all channels.
+    range_slices : str, optional
+        Slices to include in the export. Default is all slices.
+    range_frames : str, optional
+        Frames to include in the export. Default is all frames.
+    n_resolution_levels : int, optional
+        Number of pyramid resolution levels to use for the export. Default is 5.
+    use_lzw_compression : bool, optional
+        If True, compressed the output file using LZW. Default is True.
+    split_slices : bool, optional
+        If True, splits the output into separate files for each slice. Default is False.
+    split_channels : bool, optional
+        If True, splits the output into separate files for each channel. Default is False.
+    split_frames : bool, optional
+        If True, splits the output into separate files for each frame. Default is False.
+    override_z_ratio : bool, optional
+        If True, overrides the default z_ratio value. Default is False.
+    z_ratio : float, optional
+        The z ratio to use for the export. Default is 1.0.
+    use_interpolation : bool, optional
+        If True, interpolates during fusion (takes ~4x longer). Default is True.
 
     Notes
     -----
     This function requires the PTBIOP update site to be enabled in Fiji/
     ImageJ.
 
+    Examples
+    --------
+    fuse_dataset_bdvp(xml_input, cs)
     """
 
     file_info = pathtools.parse_path(project_path)
@@ -1643,17 +1670,35 @@ def fuse_dataset_bdvp(
 
     command.run(
         FuseBigStitcherDatasetIntoOMETiffCommand,
-        False,
+        True,
         "xml_bigstitcher_file",
         project_path,
         "output_path_directory",
         result_path,
+        "range_channels",
+        range_channels,
+        "range_slices",
+        range_slices,
+        "range_frames",
+        range_frames,
         "n_resolution_levels",
         n_resolution_levels,
-        "use_lzw_compression",
-        use_lzw_compression,
         "fusion_method",
         fusion_method,
+        "use_lzw_compression",
+        use_lzw_compression,
+        "split_slices",
+        split_slices,
+        "split_channels",
+        split_channels,
+        "split_frames",
+        split_frames,
+        "override_z_ratio",
+        override_z_ratio,
+        "z_ratio",
+        z_ratio,
+        "use_interpolation",
+        use_interpolation,
     ).get()
 
 
