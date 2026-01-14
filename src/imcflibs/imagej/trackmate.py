@@ -235,6 +235,44 @@ def spot_filtering(
     return settings
 
 
+def set_spotfilter(settings, filter_key, filter_value):
+    """Sets a TrackMate spot filter with specified filter key and values.
+
+    Parameters
+    ----------
+    settings : fiji.plugin.trackmate.Settings
+        Dictionary containing all the settings to use for TrackMate.
+    filter_name : str
+        The name of the filter to be applied. You must use the keys of the features, not their name.
+          Here is the table of the feature keys and names for the spot features:
+          https://imagej.net/plugins/trackmate/scripting/trackmate-detectors-trackers-keys
+    filter_value : list
+        A list containing two values for the filter. The first value is
+        applied as an above-threshold filter, and the second as a below-threshold filter.
+    
+    Returns
+    -------
+    Settings
+        The modified TrackMate settings dict with added spot filters
+
+    Example
+    -------
+    >>> # Set an above-threshold filter value for spot "QUALITY" without a below-threshold value
+    >>> tm_settings = set_trackmate_spotfilter(tm_settings, 'QUALITY', [120, None])
+    """
+    
+    settings.addAllAnalyzers()
+    if filter_value[0] != None:
+        filter_low = FeatureFilter(filter_key, filter_value[0], True)
+        settings.addSpotFilter(filter_low)
+    if filter_value[1] != None:
+        filter_high = FeatureFilter(filter_key, filter_value[1], False)
+        settings.addSpotFilter(filter_high)
+
+    return settings
+
+
+
 def sparse_lap_tracker(settings):
     """Create a sparse LAP tracker with default settings.
 
