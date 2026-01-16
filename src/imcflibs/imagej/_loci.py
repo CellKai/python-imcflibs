@@ -24,7 +24,7 @@ here simply for consistency reasons (to have everything in the same place).
 ### *** WARNING *** ### *** WARNING *** ### *** WARNING *** ### *** WARNING ***
 #
 
-
+# unproblematic imports kept here for consistency
 from loci.plugins import BF
 from loci.common import Region
 from loci.formats import ImageReader, Memoizer, MetadataTools
