@@ -35,6 +35,7 @@ ZeissCZIReader = None
 DefaultMetadataOptions = None
 MetadataLevel = None
 DynamicMetadataOptions = None
+MetadataOptions = None
 
 # perform the actual imports when running under Jython using `importlib` calls:
 import platform as _python_platform
