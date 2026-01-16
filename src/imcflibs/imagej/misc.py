@@ -719,7 +719,7 @@ def save_script_parameters(destination, save_file_name="script_parameters.txt"):
     Notes
     -----
     This function records all input parameters defined in the Fiji script header
-    (e.g. #@ String) to a text file.
+    (e.g. `#@ String`) to a text file.
 
     The following parameters are excluded:
     - Parameters explicitly declared with `style="password"` are ignored.
