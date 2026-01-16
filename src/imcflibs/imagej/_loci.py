@@ -26,6 +26,7 @@ here simply for consistency reasons (to have everything in the same place).
 
 
 from loci.plugins import BF
+from loci.common import Region
 
 # dummy objects to prevent failing imports in a non-ImageJ / Jython context:
 ImporterOptions = None
