@@ -1623,10 +1623,10 @@ def fuse_dataset_bdvp(
     command : CommandService
         The Scijava CommandService instance to execute the export command.
     result_path : str, optional
-        Path where to store the exported files. If ``None``, files will be
+        Path where to store the exported files. If `None`, files will be
         saved in the same directory as the input project.
     fusion_method : str, optional
-        Fusion method to use for exporting (default ``"SMOOTH AVERAGE"``).
+        Fusion method to use for exporting (default `SMOOTH AVERAGE`).
     range_channels : str, optional
         Channels to include in the export. Default is all channels.
     range_slices : str, optional
