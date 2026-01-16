@@ -728,7 +728,7 @@ def save_script_parameters(destination, save_file_name="script_parameters.txt"):
     # Get the ScriptModule object from globals made by Fiji
     module = globals().get("org.scijava.script.ScriptModule")
     if module is None:
-        print("No ScriptModule found — skipping saving script parameters.")
+        print("No ScriptModule found - skipping saving script parameters.")
         return
 
     destination = str(destination)
