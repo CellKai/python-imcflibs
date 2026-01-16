@@ -1406,8 +1406,8 @@ def duplicate_transformations(
     tile_apply = ""
     tile_process = ""
 
-    chnl_apply = ""
-    chnl_process = ""
+    ch_apply = ""
+    ch_process = ""
 
     if transformation_type == "channel":
         apply = "[One channel to other channels]"
@@ -1423,12 +1423,10 @@ def duplicate_transformations(
         target = "[All Tiles]"
         source = str(tile_source)
         if channel_source:
-            chnl_apply = "apply_to_channel=[Single channel (Select from List)] "
-            chnl_process = (
-                "processing_channel=[channel " + str(channel_source - 1) + "] "
-            )
+            ch_apply = "apply_to_channel=[Single channel (Select from List)] "
+            ch_process = "processing_channel=[channel " + str(channel_source - 1) + "] "
         else:
-            chnl_apply = "apply_to_channel=[All channels] "
+            ch_apply = "apply_to_channel=[All channels] "
     else:
         sys.exit("Issue with transformation duplication")
 
@@ -1443,8 +1441,8 @@ def duplicate_transformations(
         + "apply_to_illumination=[All illuminations] "
         + tile_apply
         + tile_process
-        + chnl_apply
-        + chnl_process
+        + ch_apply
+        + ch_process
         + "apply_to_timepoint=[All Timepoints] "
         + "source="
         + source
