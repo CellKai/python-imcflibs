@@ -921,14 +921,11 @@ def define_dataset_manual(
     definition_opts : dict
         Dictionary containing the details about the file repartitions.
     list_files : list of str, optional
-        If provided, a list of file names to pass directly to the manual
-        loader in "show_list" mode. When `list_files` is given the
-        function will include the filenames in the options string instead
-        of relying on a file pattern; items should be either basenames or
-        paths appropriate for the selected ``image_file_directory``.
-
+        An optional list of file names to pass directly to the manual loader in
+        "show_list" mode. When provided, the function will include the filenames
+        in the options string instead of relying on a file pattern; items should
+        be either full paths or relative to the selected `source_directory`.
     """
-
     # xml_filename = project_filename + ".xml"
 
     if definition_opts is None:
