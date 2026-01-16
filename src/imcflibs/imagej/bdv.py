@@ -1081,7 +1081,7 @@ def phase_correlation_pairwise_shifts_calculation(
     project_path : str
         Full path to the `.xml` file.
     processing_opts : imcflibs.imagej.bdv.ProcessingOptions, optional
-        The `ProcessingOptinos` object defining parameters for the run. Will
+        The `ProcessingOptions` object defining parameters for the run. Will
         fall back to the defaults defined in the corresponding class if the
         parameter is `None` or skipped.
     downsampling_xyz : list of int, optional
@@ -1200,7 +1200,7 @@ def optimize_and_apply_shifts(
     project_path : str
         Path to the `.xml` on which to optimize and apply the shifts.
     processing_opts : imcflibs.imagej.bdv.ProcessingOptions, optional
-        The `ProcessingOptinos` object defining parameters for the run. Will
+        The `ProcessingOptions` object defining parameters for the run. Will
         fall back to the defaults defined in the corresponding class if the
         parameter is `None` or skipped.
     relative_error : float, optional
@@ -1390,7 +1390,7 @@ def duplicate_transformations(
         Transformation mode, one of `channel` (to propagate from one channel to
         all others) and `tiles` (to propagate from one tile to all others).
     channel_source : int, optional
-        Reference channel nummber (starting at 1), by default None.
+        Reference channel number (starting at 1), by default None.
     tile_source : int, optional
         Reference tile, by default None.
     transformation_to_use : str, optional
@@ -1489,7 +1489,7 @@ def fuse_dataset(
     project_path : str
         Path to the `.xml` on which to run the fusion.
     processing_opts : imcflibs.imagej.bdv.ProcessingOptions, optional
-        The `ProcessingOptinos` object defining parameters for the run. Will
+        The `ProcessingOptions` object defining parameters for the run. Will
         fall back to the defaults defined in the corresponding class if the
         parameter is `None` or skipped.
     result_path : str, optional
