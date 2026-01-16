@@ -305,7 +305,7 @@ def progressbar(progress, total, line_number, prefix=""):
         "\\Update%i:%s[%s%s] %i/%i\r"
         % (
             line_number,
-            timed_log(prefix, True),
+            timed_log(prefix, as_string=True),
             "#" * x,
             "." * (size - x),
             progress,
