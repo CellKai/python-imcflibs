@@ -317,7 +317,7 @@ def progressbar(progress, total, line_number, prefix=""):
 def timed_log(message, as_string=False):
     """Print a message to the ImageJ log window, prefixed with a timestamp.
 
-    If `as_string` is set to True, nothgin will be printed to the log window,
+    If `as_string` is set to True, nothing will be printed to the log window,
     instead the formatted log message will be returned as a string.
 
     Parameters
