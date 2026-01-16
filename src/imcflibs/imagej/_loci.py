@@ -27,6 +27,7 @@ here simply for consistency reasons (to have everything in the same place).
 
 from loci.plugins import BF
 from loci.common import Region
+from loci.formats import ImageReader, Memoizer, MetadataTools
 
 # dummy objects to prevent failing imports in a non-ImageJ / Jython context:
 ImporterOptions = None
@@ -51,5 +52,3 @@ if _python_platform.python_implementation() == "Jython":  # pragma: no cover
     DynamicMetadataOptions = _loci_formats_in.DynamicMetadataOptions
     MetadataOptions = _loci_formats_in.MetadataOptions
 del _python_platform
-
-from loci.formats import ImageReader, Memoizer, MetadataTools
