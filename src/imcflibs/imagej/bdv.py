@@ -1611,10 +1611,10 @@ def fuse_dataset_bdvp(
     z_ratio=1.0,
     use_interpolation=True,
 ):
-    """Export a BigDataViewer project using the BIOP Kheops exporter.
+    """Export a project using the BigDataViewer playground (`bdvp`) exporter.
 
-    Use BIOP Kheops exporter to fuse a BigDataViewer project and save
-    it as pyramidal OME-TIFF.
+    Use the BigDataViewer playground / BIOP Kheops exporter to fuse a
+    BigDataViewer project and save it as pyramidal OME-TIFF.
 
     Parameters
     ----------
