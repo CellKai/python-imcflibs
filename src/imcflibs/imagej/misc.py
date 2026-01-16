@@ -710,12 +710,12 @@ def run_imarisconvert(file_path, pixel_calibration=None):
         )
 
     log.debug("\n%s" % command)
-    IJ.log("Converting to Imaris5 .ims...")
+    timed_log("Converting to Imaris5 .ims...")
     result = subprocess.call(command, shell=True, cwd=imaris_path)
     if result == 0:
-        IJ.log("Conversion to .ims is finished.")
+        timed_log("Conversion to .ims is finished.")
     else:
-        IJ.log("Conversion failed with error code: %d" % result)
+        timed_log("Conversion failed with error code: %d" % result)
 
 
 def save_script_parameters(destination, save_file_name="script_parameters.txt"):
@@ -740,7 +740,7 @@ def save_script_parameters(destination, save_file_name="script_parameters.txt"):
     # Get the ScriptModule object from globals made by Fiji
     module = globals().get("org.scijava.script.ScriptModule")
     if module is None:
-        IJ.log("No ScriptModule found - skipping saving script parameters.")
+        timed_log("No ScriptModule found - skipping saving script parameters.")
         return
 
     destination = str(destination)
@@ -769,4 +769,4 @@ def save_script_parameters(destination, save_file_name="script_parameters.txt"):
                 val = inputs.get(key)
                 f.write("%s: %s\n" % (key, str(val)))
 
-    print("Saved script parameters to: %s" % out_path)
+    timed_log("Saved script parameters to: %s" % out_path)
