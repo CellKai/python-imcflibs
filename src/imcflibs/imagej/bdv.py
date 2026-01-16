@@ -1636,24 +1636,23 @@ def fuse_dataset_bdvp(
     n_resolution_levels : int, optional
         Number of pyramid resolution levels to use for the export. Default is 5.
     use_lzw_compression : bool, optional
-        If True, compressed the output file using LZW. Default is True.
+        Compress the output file using LZW. Default is True.
     split_slices : bool, optional
-        If True, splits the output into separate files for each slice. Default is False.
+        Split output into separate files for each slice. Default is False.
     split_channels : bool, optional
-        If True, splits the output into separate files for each channel. Default is False.
+        Split output into separate files for each channel. Default is False.
     split_frames : bool, optional
-        If True, splits the output into separate files for each frame. Default is False.
+        Split output into separate files for each frame. Default is False.
     override_z_ratio : bool, optional
-        If True, overrides the default z_ratio value. Default is False.
+        Override the default `z_ratio` value. Default is False.
     z_ratio : float, optional
         The z ratio to use for the export. Default is 1.0.
     use_interpolation : bool, optional
-        If True, interpolates during fusion (takes ~4x longer). Default is True.
+        Interpolate during fusion (takes ~4x longer). Default is True.
 
     Notes
     -----
-    This function requires the PTBIOP update site to be enabled in Fiji/
-    ImageJ.
+    Requires the `PTBIOP` update site to be enabled in Fiji/ImageJ.
 
     Examples
     --------
