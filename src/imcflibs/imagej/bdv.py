@@ -929,7 +929,7 @@ def define_dataset_manual(
     # xml_filename = project_filename + ".xml"
 
     if definition_opts is None:
-        definition_opts = bdv.DefinitionOptions()
+        definition_opts = DefinitionOptions()
 
     show_list_options = "" if not list_files else "show_list " + " ".join(list_files)
 
@@ -995,7 +995,7 @@ def resave_as_h5(
     """
 
     if not processing_opts:
-        processing_opts = bdv.ProcessingOptions()
+        processing_opts = ProcessingOptions()
 
     if use_deflate_compression:
         use_deflate_compression_arg = "use_deflate_compression "
