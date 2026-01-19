@@ -21,7 +21,6 @@ from ij import IJ
 from .. import pathtools
 from ..log import LOG as log
 
-
 # internal template strings used in string formatting (note: the `"""@private"""`
 # pseudo-decorator is there to instruct [pdoc] to omit those variables when generating
 # API documentation):
@@ -1373,7 +1372,7 @@ def interest_points_registration(
 def duplicate_transformations(
     project_path,
     transformation_type="channel",
-    channel_source=None,
+    channel_source=0,
     tile_source=None,
     transformation_to_use="[Replace all transformations]",
 ):
@@ -1412,7 +1411,10 @@ def duplicate_transformations(
     if transformation_type == "channel":
         apply = "[One channel to other channels]"
         target = "[All Channels]"
-        source = str(channel_source - 1)
+        if channel_source > 0:
+            source = str(channel_source - 1)
+        else:
+            source = "0"
         if tile_source:
             tile_apply = "apply_to_tile=[Single tile (Select from List)] "
             tile_process = "processing_tile=[tile " + str(tile_source) + "] "
@@ -1422,7 +1424,7 @@ def duplicate_transformations(
         apply = "[One tile to other tiles]"
         target = "[All Tiles]"
         source = str(tile_source)
-        if channel_source:
+        if channel_source > 0:
             chnl_apply = "apply_to_channel=[Single channel (Select from List)] "
             chnl_process = (
                 "processing_channel=[channel " + str(channel_source - 1) + "] "
@@ -1430,7 +1432,7 @@ def duplicate_transformations(
         else:
             chnl_apply = "apply_to_channel=[All channels] "
     else:
-        sys.exit("Issue with transformation duplication")
+        raise ValueError("Issue with transformation duplication")
 
     options = (
         "apply="
