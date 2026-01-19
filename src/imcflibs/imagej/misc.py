@@ -417,7 +417,7 @@ def subtract_images(imp1, imp2):
     """
     ic = ImageCalculator()
     if imp1.getNSlices() != imp2.getNSlices():
-        sys.exit(
+        raise ValueError(
             "Cannot subtract images with different number of slices, "
             "please check your input data."
         )
