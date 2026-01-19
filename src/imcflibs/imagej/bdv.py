@@ -21,7 +21,6 @@ from ij import IJ
 from .. import pathtools
 from ..log import LOG as log
 
-
 # internal template strings used in string formatting (note: the `"""@private"""`
 # pseudo-decorator is there to instruct [pdoc] to omit those variables when generating
 # API documentation):
@@ -732,6 +731,21 @@ def get_processing_settings(dimension, selection, value, range_end):
     tuple of str
         processing_option, dimension_select
     """
+
+    # Validate inputs according to the function docstring
+    valid_dimensions = ("angle", "channel", "illumination", "tile", "timepoint")
+    if dimension not in valid_dimensions:
+        raise ValueError(
+            "Invalid dimension '%s', expected one of: %s"
+            % (dimension, ", ".join(valid_dimensions))
+        )
+
+    valid_selections = ("single", "multiple", "range")
+    if selection not in valid_selections:
+        raise ValueError(
+            "Invalid selection '%s', expected one of: %s"
+            % (selection, ", ".join(valid_selections))
+        )
 
     if selection == "single":
         processing_option = SINGLE % dimension
