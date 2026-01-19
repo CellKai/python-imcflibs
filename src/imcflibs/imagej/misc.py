@@ -419,7 +419,14 @@ def subtract_images(imp1, imp2):
         The ImagePlus resulting from the subtraction.
     """
     ic = ImageCalculator()
-    subtracted = ic.run("Subtract create", imp1, imp2)
+    if imp1.getNSlices() != imp2.getNSlices():
+        raise ValueError(
+            "Cannot subtract images with different number of slices, "
+            "please check your input data."
+        )
+    option = " stack" if imp1.getNSlices() > 1 else ""
+    subtracted = ic.run("Subtract create" + option, imp1, imp2)
+    subtracted.setCalibration(imp1.getCalibration())
 
     return subtracted
 
