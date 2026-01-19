@@ -21,7 +21,6 @@ from ij import IJ
 from .. import pathtools
 from ..log import LOG as log
 
-
 # internal template strings used in string formatting (note: the `"""@private"""`
 # pseudo-decorator is there to instruct [pdoc] to omit those variables when generating
 # API documentation):
@@ -1351,11 +1350,13 @@ def interest_points_registration(
         + "transformation=Affine "
         + "regularize_model "
         + "model_to_regularize_with=Affine "
-        + "lamba=0.10 "
+        + "lambda=0.10 "
         + "number_of_neighbors=3 "
         + "redundancy=1 "
         + "significance=3 "
+        + "search_radius=100 "
         + "allowed_error_for_ransac=5 "
+        + "inlier_factor=3 "
         + "ransac_iterations=Normal "
         + "global_optimization_strategy=["
         + "Two-Round: Handle unconnected tiles, "
