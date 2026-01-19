@@ -1432,7 +1432,7 @@ def duplicate_transformations(
         else:
             chnl_apply = "apply_to_channel=[All channels] "
     else:
-        raise ValueError("Issue with transformation duplication")
+        raise ValueError("Invalid transformation type: %s" % transformation_type)
 
     options = (
         "apply="
