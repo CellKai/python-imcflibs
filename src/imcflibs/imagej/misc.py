@@ -16,6 +16,9 @@ from ..log import LOG as log
 from . import bioformats as bf
 from . import prefs
 
+from org.scijava.widget import WidgetStyle
+from org.scijava.widget import TextWidget
+
 
 def show_status(msg):
     """Update the ImageJ status bar and issue a log message.
@@ -302,7 +305,7 @@ def progressbar(progress, total, line_number, prefix=""):
         "\\Update%i:%s[%s%s] %i/%i\r"
         % (
             line_number,
-            timed_log(prefix, True),
+            timed_log(prefix, as_string=True),
             "#" * x,
             "." * (size - x),
             progress,
@@ -314,7 +317,7 @@ def progressbar(progress, total, line_number, prefix=""):
 def timed_log(message, as_string=False):
     """Print a message to the ImageJ log window, prefixed with a timestamp.
 
-    If `as_string` is set to True, nothgin will be printed to the log window,
+    If `as_string` is set to True, nothing will be printed to the log window,
     instead the formatted log message will be returned as a string.
 
     Parameters
@@ -416,7 +419,14 @@ def subtract_images(imp1, imp2):
         The ImagePlus resulting from the subtraction.
     """
     ic = ImageCalculator()
-    subtracted = ic.run("Subtract create", imp1, imp2)
+    if imp1.getNSlices() != imp2.getNSlices():
+        raise ValueError(
+            "Cannot subtract images with different number of slices, "
+            "please check your input data."
+        )
+    option = " stack" if imp1.getNSlices() > 1 else ""
+    subtracted = ic.run("Subtract create" + option, imp1, imp2)
+    subtracted.setCalibration(imp1.getCalibration())
 
     return subtracted
 
@@ -523,7 +533,7 @@ def write_ordereddict_to_csv(out_file, content):
             dict_writer.writerows(content)
 
 
-def save_image_in_format(imp, format, out_dir, series, pad_number, split_channels):
+def save_image_in_format(imp, format, out_dir, series, pad_number, split_channels, suffix=""):
     """Save an ImagePlus object in the specified format.
 
     This function provides flexible options for saving ImageJ images in various
@@ -552,6 +562,8 @@ def save_image_in_format(imp, format, out_dir, series, pad_number, split_channel
         If True, split channels and save them individually in separate folders
         named "C1", "C2", etc. inside out_dir. If False, save all channels in a
         single file.
+    suffix : str, optional
+        Text to be added to the filename, by default an empty string.
 
     Notes
     -----
@@ -614,14 +626,14 @@ def save_image_in_format(imp, format, out_dir, series, pad_number, split_channel
     for index, current_imp in enumerate(imp_to_use):
         basename = imp.getShortTitle()
 
-        out_path = os.path.join(
+        out_path = pathtools.join2(
             dir_to_save[index],
-            basename + "_series_" + str(series).zfill(pad_number),
+            basename + "_series_" + str(series).zfill(pad_number) + suffix,
         )
 
         if format == "ImageJ-TIF":
             pathtools.create_directory(dir_to_save[index])
-            IJ.saveAs(current_imp, "Tiff", out_path + ".tif")
+            IJ.saveAs(current_imp, "Tiff", out_path + suffix + ".tif")
 
         elif format == "BMP":
             out_folder = os.path.join(out_dir, basename + os.path.sep)
@@ -629,7 +641,7 @@ def save_image_in_format(imp, format, out_dir, series, pad_number, split_channel
             StackWriter.save(current_imp, out_folder, "format=bmp")
 
         else:
-            bf.export(current_imp, out_path + out_ext[format])
+            bf.export(current_imp, out_path + suffix + out_ext[format])
 
         current_imp.close()
 
@@ -705,9 +717,63 @@ def run_imarisconvert(file_path, pixel_calibration=None):
         )
 
     log.debug("\n%s" % command)
-    IJ.log("Converting to Imaris5 .ims...")
+    timed_log("Converting to Imaris5 .ims...")
     result = subprocess.call(command, shell=True, cwd=imaris_path)
     if result == 0:
-        IJ.log("Conversion to .ims is finished.")
+        timed_log("Conversion to .ims is finished.")
     else:
-        IJ.log("Conversion failed with error code: %d" % result)
+        timed_log("Conversion failed with error code: %d" % result)
+
+
+def save_script_parameters(destination, save_file_name="script_parameters.txt"):
+    """Save all Fiji script parameters to a text file.
+
+    Parameters
+    ----------
+    destination : str
+        Directory where the script parameters file will be saved.
+    save_file_name : str, optional
+        Name of the script parameters file, by default "script_parameters.txt".
+
+    Notes
+    -----
+    This function records all input parameters defined in the Fiji script header
+    (e.g. `#@ String`) to a text file.
+
+    The following parameters are excluded:
+    - Parameters explicitly declared with `style="password"` are ignored.
+    - Runtime keys (e.g. 'SJLOG', 'COMMAND', 'RM') are also skipped.
+    """
+    # Get the ScriptModule object from globals made by Fiji
+    module = globals().get("org.scijava.script.ScriptModule")
+    if module is None:
+        timed_log("No ScriptModule found - skipping saving script parameters.")
+        return
+
+    destination = str(destination)
+    out_path = os.path.join(destination, save_file_name)
+
+    # Access script metadata and inputs
+    script_info = module.getInfo()
+    inputs = module.getInputs()
+
+    # Keys to skip explicitly
+    skip_keys = ["USERNAME", "SJLOG", "COMMAND", "RM"]
+
+    with open(out_path, "w") as f:
+        for item in script_info.inputs():
+            key = item.getName()
+
+            # Skip if any keys are in the skip list
+            if any(skip in key.upper() for skip in skip_keys):
+                continue
+
+            # Skip if parameter is declared with password style
+            if WidgetStyle.isStyle(item, TextWidget.PASSWORD_STYLE):
+                continue
+
+            if inputs.containsKey(key):
+                val = inputs.get(key)
+                f.write("%s: %s\n" % (key, str(val)))
+
+    timed_log("Saved script parameters to: %s" % out_path)
