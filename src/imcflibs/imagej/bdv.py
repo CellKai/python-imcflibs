@@ -731,6 +731,7 @@ def get_processing_settings(dimension, selection, value, range_end):
     tuple of str
         processing_option, dimension_select
     """
+    processing_option = dimension_select = ""
 
     # Validate inputs according to the function docstring
     valid_dimensions = ("angle", "channel", "illumination", "tile", "timepoint")
