@@ -1,5 +1,6 @@
 """Helper functions to work with filenames, directories etc."""
 
+import os
 import os.path
 import platform
 import re
@@ -409,8 +410,6 @@ def join_files_with_channel_suffix(files, nchannels):
     list of str
         Ordered list of filenames (originals then suffixed copies).
     """
-    import os
-
     if not files:
         return ""
     try:
