@@ -1427,10 +1427,8 @@ def duplicate_transformations(
         target = "[All Tiles]"
         source = str(tile_source)
         if channel_source > 0:
-            chnl_apply = "apply_to_channel=[Single channel (Select from List)] "
-            chnl_process = (
-                "processing_channel=[channel " + str(channel_source - 1) + "] "
-            )
+            ch_apply = "apply_to_channel=[Single channel (Select from List)] "
+            ch_process = "processing_channel=[channel " + str(channel_source - 1) + "] "
         else:
             ch_apply = "apply_to_channel=[All channels] "
     else:
