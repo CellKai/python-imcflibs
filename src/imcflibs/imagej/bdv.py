@@ -17,14 +17,12 @@ from ch.epfl.biop.scijava.command.spimdata import (
     FuseBigStitcherDatasetIntoOMETiffCommand,
 )
 from ij import IJ
-
 from java.io import File, FileInputStream, InputStreamReader
 from javax.xml.parsers import DocumentBuilderFactory
 from org.xml.sax import InputSource
 
 from .. import pathtools
 from ..log import LOG as log
-
 
 # internal template strings used in string formatting (note: the `"""@private"""`
 # pseudo-decorator is there to instruct [pdoc] to omit those variables when generating
@@ -1684,16 +1682,18 @@ def read_metadata_from_xml(xml_path):
     # Use our robust XML parsing function
     dbf = DocumentBuilderFactory.newInstance()
     db = dbf.newDocumentBuilder()
-    # This is needed to fix some issues with the micron symbol in the xml file
-    reader = InputStreamReader(FileInputStream(File(xml_path)))
-    dom = db.parse(InputSource(reader))
 
     # Initialize default values
     nbr_chnl = 1
     nbr_ill = 1
     nbr_tp = 1
 
+    reader = None
     try:
+        # This is needed to fix some issues with the micron symbol in the xml file
+        reader = InputStreamReader(FileInputStream(File(xml_path)))
+        dom = db.parse(InputSource(reader))
+
         # Extract channel and illumination counts
         nodeList = dom.getElementsByTagName("Attributes")
         for i in range(nodeList.getLength()):
@@ -1718,7 +1718,18 @@ def read_metadata_from_xml(xml_path):
             if last_nodes.getLength() > 0:
                 nbr_tp = int(last_nodes.item(0).getTextContent()) + 1
     except Exception as e:
-        log.error("Error extracting metadata from XML: {0}".format(str(e)))
+        # log.exception includes the traceback when available
+        try:
+            log.exception("Error extracting metadata from XML: %s", e)
+        except Exception:
+            log.error("Error extracting metadata from XML: %s", str(e))
+    finally:
+        # Ensure the Java reader is closed to free resources
+        try:
+            if reader is not None:
+                reader.close()
+        except Exception:
+            pass
 
     xml_metadata = {
         "channels_count": nbr_chnl,
