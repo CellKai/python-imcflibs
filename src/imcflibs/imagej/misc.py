@@ -684,12 +684,11 @@ def run_imarisconvert(file_path, pixel_calibration=None, output_folder=""):
         Sequence of 3 values (x, y, z) representing voxel dimensions to be set during
         conversion, by default None.
     output_folder : str, optional
-        Folder where the newly created IMS file will be saved, by default None.
+        Folder where the newly created IMS file will be saved, by default None
+        which will result in the output file being saved in the same directory as the input file.
 
     Notes
     -----
-    - If `output_folder` is not provided (or is empty), the converted `.ims`
-        file will be written to the same directory as the input file.
     - The output filename is constructed by taking the input filename and
         replacing its extension with `.ims` (for example,
         `/path/to/image.czi` -> `/path/to/image.ims`).
