@@ -669,7 +669,7 @@ def locate_latest_imaris(paths_to_check=None):
     return imaris_paths[-1]
 
 
-def run_imarisconvert(file_path, output_folder=None, pixel_calibration=None):
+def run_imarisconvert(file_path, pixel_calibration=None, output_folder=None):
     """Convert a given file to Imaris format using ImarisConvert.
 
     Convert the input image file to Imaris format (Imaris5) using the
@@ -680,11 +680,11 @@ def run_imarisconvert(file_path, output_folder=None, pixel_calibration=None):
     ----------
     file_path : str
         Absolute path to the input image file.
-    output_folder : str, optional
-        Folder where the newly created IMS file will be saved, by default None.
     pixel_calibration : tuple or list, optional
         Sequence of 3 values (x, y, z) representing voxel dimensions to be set during
         conversion, by default None.
+    output_folder : str, optional
+        Folder where the newly created IMS file will be saved, by default None.
     """
     # in case the given file has the suffix `.ids` (meaning it is part of an
     # ICS-1 `.ics`+`.ids` pair), point ImarisConvert to the `.ics` file instead:
