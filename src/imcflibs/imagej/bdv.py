@@ -1656,18 +1656,17 @@ def fuse_dataset_bdvp(
 
     Examples
     --------
-    Typical usage examples (doctest-style):
 
-    Example 1 - basic export using a CommandService instance available as
-    ``command``::
+    Example 1 - simple export using a CommandService instance available as
+    `command`, using the default options and placing the output  next to the
+    input xml:
 
     >>> #@ CommandService command
     >>> xml_input = "/path/to/project.xml"
-    >>> # run with default options, output placed next to the input xml
     >>> fuse_dataset_bdvp(xml_input, command)
 
-    Example 2 - explicit options (custom output path, specific channels,
-    no interpolation, override z ratio)::
+    Example 2 - explicit options using a custom output path, specific channels,
+    disabling interpolation and overriding the z-ratio:
 
     >>> #@ CommandService command
     >>> xml_input = "/path/to/project.xml"
@@ -1686,7 +1685,6 @@ def fuse_dataset_bdvp(
     ...     use_interpolation=False,
     ... )
     """
-
     file_info = pathtools.parse_path(project_path)
 
     if not result_path:
