@@ -669,7 +669,7 @@ def locate_latest_imaris(paths_to_check=None):
     return imaris_paths[-1]
 
 
-def run_imarisconvert(file_path, pixel_calibration=None, output_folder=None):
+def run_imarisconvert(file_path, pixel_calibration=None, output_folder=""):
     """Convert a given file to Imaris format using ImarisConvert.
 
     Convert the input image file to Imaris format (Imaris5) using the
@@ -696,7 +696,7 @@ def run_imarisconvert(file_path, pixel_calibration=None, output_folder=None):
     imaris_path = locate_latest_imaris()
 
     if not output_folder:
-        output_folder = os.getcwd()
+        output_folder = os.path.dirname(file_path)
 
     command = 'ImarisConvert.exe  -i "%s" -of Imaris5 -o "%s"' % (
         file_path,
