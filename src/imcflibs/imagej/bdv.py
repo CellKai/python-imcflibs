@@ -868,7 +868,7 @@ def define_dataset_auto(
     if timepoints_per_partition > 0:
         split_timepoints = "split_hdf5 timepoints_per_partition=" + str(
             timepoints_per_partition
-        )
+        ) + " "
     else:
         split_timepoints = ""
 
@@ -909,7 +909,6 @@ def define_dataset_auto(
         + subsampling_factors
         + hdf5_chunk_sizes
         + split_timepoints
-        + " "
         + "setups_per_partition=0 "
         + "use_deflate_compression "
     )
