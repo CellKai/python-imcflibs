@@ -934,9 +934,9 @@ def define_dataset_manual(
         Regular expression corresponding to the names of your files and how to
         read the different dimensions.
     dataset_organisation : str
-        Organisation of the dataset and the dimensions to process.
-        Allows for defining the range of interest of the different dimensions.
-        Looks like "timepoints_=%s-%s channels_=0-%s tiles_=%s-%s"
+        Organisation of the dataset and the dimensions to process. Allows for
+        defining the range(s) of interest for the different dimensions, for
+        example: `timepoints_=%s-%s channels_=0-%s tiles_=%s-%s`.
     definition_opts : dict
         Dictionary containing the details about the file repartitions.
     list_files : list of str, optional
