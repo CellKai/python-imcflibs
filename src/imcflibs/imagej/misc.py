@@ -681,7 +681,7 @@ def locate_latest_imaris(paths_to_check=None):
     return imaris_paths[-1]
 
 
-def run_imarisconvert(file_path, pixel_calibration=None):
+def run_imarisconvert(file_path, pixel_calibration=None, output_folder=""):
     """Convert a given file to Imaris format using ImarisConvert.
 
     Convert the input image file to Imaris format (Imaris5) using the
@@ -693,8 +693,18 @@ def run_imarisconvert(file_path, pixel_calibration=None):
     file_path : str
         Absolute path to the input image file.
     pixel_calibration : tuple or list, optional
-        Sequence of 3 values (x, y, z) representing voxel dimensions to be set during
-        conversion, by default None.
+        Sequence of 3 values (x, y, z) representing voxel dimensions to be set
+        during conversion, by default None.
+    output_folder : str, optional
+        Folder where the newly created IMS file will be saved. If empty (or not
+        supplied), the directory of the input file will be used.
+
+    Notes
+    -----
+    - The output filename is constructed by replacing extension of the input
+      filename with `.ims` (e.g. `/path/to/image.czi` -> `/path/to/image.ims`).
+    - If the input has an `.ids` extension (part of an ICS-1 pair), the
+      corresponding `.ics` file is used instead.
     """
     # in case the given file has the suffix `.ids` (meaning it is part of an
     # ICS-1 `.ics`+`.ids` pair), point ImarisConvert to the `.ics` file instead:
@@ -705,9 +715,12 @@ def run_imarisconvert(file_path, pixel_calibration=None):
 
     imaris_path = locate_latest_imaris()
 
+    if not output_folder:
+        output_folder = os.path.dirname(file_path)
+
     command = 'ImarisConvert.exe  -i "%s" -of Imaris5 -o "%s"' % (
         file_path,
-        file_path.replace(file_extension, ".ims"),
+        os.path.join(output_folder, file_path.replace(file_extension, ".ims")),
     )
     if pixel_calibration:
         command = command + " --voxelsizex %s --voxelsizey %s --voxelsizez %s" % (
@@ -720,9 +733,9 @@ def run_imarisconvert(file_path, pixel_calibration=None):
     timed_log("Converting to Imaris5 .ims...")
     result = subprocess.call(command, shell=True, cwd=imaris_path)
     if result == 0:
-        timed_log("Conversion to .ims is finished.")
+        timed_log("Conversion to .ims is finished: %s" % file_path)
     else:
-        timed_log("Conversion failed with error code: %d" % result)
+        timed_log("Error converting [%s]: %d" % (file_path, result))
 
 
 def save_script_parameters(destination, save_file_name="script_parameters.txt"):
