@@ -117,40 +117,6 @@ def segment_3d_image(imp, title=None, min_thresh=1, min_vol=None, max_vol=None):
     return seg.getImagePlus()
 
 
-def get_objects_within_intensity(obj_pop, imp, min_intensity, max_intensity):
-    """Filter a population for objects within the given intensity range.
-
-    Parameters
-    ----------
-    obj_pop : mcib3d.geom.Objects3DPopulation
-        A population of 3D objects.
-    imp : ij.ImagePlus
-        An ImagePlus on which the population is based.
-    min_intensity : float
-        Minimum mean intensity threshold for filtering objects.
-    max_intensity : float
-        Maximum mean intensity threshold for filtering objects.
-
-    Returns
-    -------
-    Objects3DPopulation
-        New population with the objects filtered by intensity.
-    """
-    objects_within_intensity = []
-
-    # Iterate over all objects in the population
-    for i in range(0, obj_pop.getNbObjects()):
-        obj = obj_pop.getObject(i)
-        # Calculate the mean intensity of the object
-        mean_intensity = obj.getPixMeanValue(ImageHandler.wrap(imp))
-        # Check if the object is within the specified intensity range
-        if mean_intensity >= min_intensity and mean_intensity < max_intensity:
-            objects_within_intensity.append(obj)
-
-    # Return the new population with the filtered objects
-    return Objects3DPopulation(objects_within_intensity)
-
-
 def maxima_finder_3d(imp, min_threshold=0, noise=100, rxy=1.5, rz=1.5):
     """Find local maxima in a 3D image.
 
