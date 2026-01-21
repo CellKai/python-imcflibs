@@ -733,9 +733,9 @@ def run_imarisconvert(file_path, pixel_calibration=None, output_folder=""):
     timed_log("Converting to Imaris5 .ims...")
     result = subprocess.call(command, shell=True, cwd=imaris_path)
     if result == 0:
-        timed_log("Conversion to .ims is finished.")
+        timed_log("Conversion to .ims is finished: %s" % file_path)
     else:
-        timed_log("Conversion failed with error code: %d" % result)
+        timed_log("Error converting [%s]: %d" % (file_path, result))
 
 
 def save_script_parameters(destination, save_file_name="script_parameters.txt"):
