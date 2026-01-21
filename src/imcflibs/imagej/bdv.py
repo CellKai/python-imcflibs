@@ -1678,7 +1678,6 @@ def fuse_dataset_bdvp(
 
     Examples
     --------
-
     Example 1 - simple export using a CommandService instance available as
     `command`, using the default options and placing the output  next to the
     input xml:
