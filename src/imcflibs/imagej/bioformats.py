@@ -24,6 +24,7 @@ from ._loci import (
     Memoizer,
     MetadataTools,
     ZeissCZIReader,
+    Region,
 )
 
 
@@ -186,6 +187,7 @@ def import_image(
     t_start=None,
     t_end=None,
     t_interval=None,
+    region=None,
 ):
     """Open an image file using the Bio-Formats importer.
 
@@ -229,8 +231,11 @@ def import_image(
         only import a subset of time points ending with this one. Requires to
         set t_start and t_interval.
     t_interval : int, optional
-        only import a subset of time points with thsi interval. Requires to set
+        only import a subset of time points with this interval. Requires to set
         t_start and t_end.
+    region : list, optional
+        Bio-Formats crop region, by default None.
+        Format: `[start_x, start_y, width_in_px, height_in_px]`.
 
     Returns
     -------
@@ -275,6 +280,12 @@ def import_image(
         options.setTBegin(series_number, t_start)
         options.setTEnd(series_number, t_end)
         options.setTStep(series_number, t_interval)
+
+    if region is not None:
+        options.setCrop(True)
+        options.setCropRegion(
+            series_number, Region(region[0], region[1], region[2], region[3])
+        )
 
     log.info("Reading [%s]", filename)
     orig_imps = BF.openImagePlus(options)
