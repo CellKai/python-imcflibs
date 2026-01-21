@@ -693,19 +693,18 @@ def run_imarisconvert(file_path, pixel_calibration=None, output_folder=""):
     file_path : str
         Absolute path to the input image file.
     pixel_calibration : tuple or list, optional
-        Sequence of 3 values (x, y, z) representing voxel dimensions to be set during
-        conversion, by default None.
+        Sequence of 3 values (x, y, z) representing voxel dimensions to be set
+        during conversion, by default None.
     output_folder : str, optional
-        Folder where the newly created IMS file will be saved, by default None
-        which will result in the output file being saved in the same directory as the input file.
+        Folder where the newly created IMS file will be saved. If empty (or not
+        supplied), the directory of the input file will be used.
 
     Notes
     -----
-    - The output filename is constructed by taking the input filename and
-        replacing its extension with `.ims` (for example,
-        `/path/to/image.czi` -> `/path/to/image.ims`).
+    - The output filename is constructed by replacing extension of the input
+      filename with `.ims` (e.g. `/path/to/image.czi` -> `/path/to/image.ims`).
     - If the input has an `.ids` extension (part of an ICS-1 pair), the
-        corresponding `.ics` file is used as the source before conversion.
+      corresponding `.ics` file is used instead.
     """
     # in case the given file has the suffix `.ids` (meaning it is part of an
     # ICS-1 `.ics`+`.ids` pair), point ImarisConvert to the `.ics` file instead:
