@@ -920,6 +920,7 @@ def define_dataset_manual(
     image_file_pattern,
     dataset_organisation,
     definition_opts=None,
+    list_files=None,
 ):
     """Run "Define Multi-View Dataset" using the "Manual Loader" option.
 
@@ -938,20 +939,23 @@ def define_dataset_manual(
         Looks like "timepoints_=%s-%s channels_=0-%s tiles_=%s-%s"
     definition_opts : dict
         Dictionary containing the details about the file repartitions.
+    list_files : list of str, optional
+        An optional list of file names to pass directly to the manual loader in
+        "show_list" mode. When provided, the function will include the filenames
+        in the options string instead of relying on a file pattern; items should
+        be either full paths or relative to the selected `source_directory`.
     """
-
-    xml_filename = project_filename + ".xml"
+    # xml_filename = project_filename + ".xml"
 
     if definition_opts is None:
         definition_opts = DefinitionOptions()
 
-    temp = os.path.join(source_directory, project_filename + "_temp")
-    os.path.join(temp, project_filename)
+    show_list_options = "" if not list_files else "show_list " + " ".join(list_files)
 
     options = (
         "define_dataset=[Manual Loader (Bioformats based)] "
         + "project_filename=["
-        + xml_filename
+        + project_filename
         + "] "
         + "_____"
         + definition_opts.fmt_acitt_options()
@@ -961,11 +965,12 @@ def define_dataset_manual(
         + " "
         + "image_file_pattern="
         + image_file_pattern
+        + " "
         + dataset_organisation
         + " "
         + "calibration_type=[Same voxel-size for all views] "
         + "calibration_definition=[Load voxel-size(s) from file(s)] "
-        # + "imglib2_data_container=[ArrayImg (faster)]"
+        + show_list_options
     )
 
     log.debug("Manual dataset definition options: <%s>", options)
@@ -1050,7 +1055,7 @@ def resave_as_h5(
     )
 
     log.debug("Resave as HDF5 options: <%s>", options)
-    IJ.run("As HDF5", str(options))
+    IJ.run("Resave as HDF5 (local)", str(options))
 
 
 def flip_axes(source_xml_file, x=False, y=True, z=False):
@@ -1614,14 +1619,24 @@ def fuse_dataset(
 def fuse_dataset_bdvp(
     project_path,
     command,
-    processing_opts=None,
     result_path=None,
-    compression="LZW",
+    fusion_method="SMOOTH AVERAGE",
+    range_channels="",
+    range_slices="",
+    range_frames="",
+    n_resolution_levels=5,
+    use_lzw_compression=True,
+    split_slices=False,
+    split_channels=False,
+    split_frames=False,
+    override_z_ratio=False,
+    z_ratio=1.0,
+    use_interpolation=True,
 ):
-    """Export a BigDataViewer project using the BIOP Kheops exporter.
+    """Export a project using the BigDataViewer playground (`bdvp`) exporter.
 
-    Use the BIOP Kheops exporter to convert a BigDataViewer project into
-    OME-TIFF files, with optional compression.
+    Use the BigDataViewer playground / BIOP Kheops exporter to fuse a
+    BigDataViewer project and save it as pyramidal OME-TIFF.
 
     Parameters
     ----------
@@ -1629,133 +1644,102 @@ def fuse_dataset_bdvp(
         Full path to the BigDataViewer XML project file.
     command : CommandService
         The Scijava CommandService instance to execute the export command.
-    processing_opts : ProcessingOptions, optional
-        Options defining which parts of the dataset to process. If None, default
-        processing options will be used (process all angles, channels, etc.).
     result_path : str, optional
-        Path where to store the exported files. If None, files will be saved in
-        the same directory as the input project.
-    compression : str, optional
-        Compression method to use for the TIFF files. Default is "LZW".
+        Path where to store the exported files. If `None`, files will be
+        saved in the same directory as the input project.
+    fusion_method : str, optional
+        Fusion method to use for exporting (default `SMOOTH AVERAGE`).
+    range_channels : str, optional
+        Channels to include in the export. Default is all channels.
+    range_slices : str, optional
+        Slices to include in the export. Default is all slices.
+    range_frames : str, optional
+        Frames to include in the export. Default is all frames.
+    n_resolution_levels : int, optional
+        Number of pyramid resolution levels to use for the export. Default is 5.
+    use_lzw_compression : bool, optional
+        Compress the output file using LZW. Default is True.
+    split_slices : bool, optional
+        Split output into separate files for each slice. Default is False.
+    split_channels : bool, optional
+        Split output into separate files for each channel. Default is False.
+    split_frames : bool, optional
+        Split output into separate files for each frame. Default is False.
+    override_z_ratio : bool, optional
+        Override the default `z_ratio` value. Default is False.
+    z_ratio : float, optional
+        The z ratio to use for the export. Default is 1.0.
+    use_interpolation : bool, optional
+        Interpolate during fusion (takes ~4x longer). Default is True.
 
     Notes
     -----
-    This function requires the PTBIOP update site to be enabled in Fiji/ImageJ.
-    """
-    if processing_opts is None:
-        processing_opts = ProcessingOptions()
-
-    file_info = pathtools.parse_path(project_path)
-    if not result_path:
-        result_path = file_info["path"]
-        # if not os.path.exists(result_path):
-        #     os.makedirs(result_path)
-
-    command.run(
-        FuseBigStitcherDatasetIntoOMETiffCommand,
-        True,
-        "image",
-        project_path,
-        "output_dir",
-        result_path,
-        "compression",
-        compression,
-        "subset_channels",
-        "",
-        "subset_slices",
-        "",
-        "subset_frames",
-        "",
-        "compress_temp_files",
-        False,
-    )
-
-
-def read_metadata_from_xml(xml_path):
-    """Extract metadata from a Zeiss Lightsheet microscopy XML file.
-
-    Parse the XML document to retrieve the number of channels, illuminations,
-    and timepoints from the experiment metadata.
-
-    Parameters
-    ----------
-    xml_path : str
-        Path to the XML metadata file.
-
-    Returns
-    -------
-    dict
-        A dictionary containing the following keys:
-        - 'channels_count': Number of channels in the dataset
-        - 'illuminations_count': Number of illumination directions
-        - 'timepoints_count': Number of timepoints in the dataset
+    Requires the `PTBIOP` update site to be enabled in Fiji/ImageJ.
 
     Examples
     --------
-    >>> metadata = read_metadata_from_xml("/path/to/experiment.xml")
-    >>> print(metadata["channels_count"])
-    ... 2
-    >>> print(metadata["illuminations_count"])
-    ... 4
-    >>> print(metadata["timepoints_count"])
-    ... 1
+    Example 1 - simple export using a CommandService instance available as
+    `command`, using the default options and placing the output  next to the
+    input xml:
+
+    >>> #@ CommandService command
+    >>> xml_input = "/path/to/project.xml"
+    >>> fuse_dataset_bdvp(xml_input, command)
+
+    Example 2 - explicit options using a custom output path, specific channels,
+    disabling interpolation and overriding the z-ratio:
+
+    >>> #@ CommandService command
+    >>> xml_input = "/path/to/project.xml"
+    >>> out_dir = "/path/to/output_dir"
+    >>> fuse_dataset_bdvp(
+    ...     xml_input,
+    ...     command,
+    ...     result_path=out_dir,
+    ...     fusion_method="SMOOTH AVERAGE",
+    ...     range_channels="0-1",
+    ...     n_resolution_levels=4,
+    ...     use_lzw_compression=False,
+    ...     split_channels=True,
+    ...     override_z_ratio=True,
+    ...     z_ratio=2.0,
+    ...     use_interpolation=False,
+    ... )
     """
-    # Use our robust XML parsing function
-    dbf = DocumentBuilderFactory.newInstance()
-    db = dbf.newDocumentBuilder()
+    file_info = pathtools.parse_path(project_path)
 
-    # Initialize default values
-    nbr_chnl = 1
-    nbr_ill = 1
-    nbr_tp = 1
+    if not result_path:
+        result_path = file_info["path"]
 
-    reader = None
-    try:
-        # This is needed to fix some issues with the micron symbol in the xml file
-        reader = InputStreamReader(FileInputStream(File(xml_path)))
-        dom = db.parse(InputSource(reader))
-
-        # Extract channel and illumination counts
-        nodeList = dom.getElementsByTagName("Attributes")
-        for i in range(nodeList.getLength()):
-            name_attr = nodeList.item(i).getAttributes().getNamedItem("name")
-            if name_attr is None:
-                continue
-
-            node = name_attr.getNodeValue()
-            if node == "channel":
-                nbr_chnl = int(
-                    nodeList.item(i).getElementsByTagName("Channel").getLength()
-                )
-            if node == "illumination":
-                nbr_ill = int(
-                    nodeList.item(i).getElementsByTagName("Illumination").getLength()
-                )
-
-        # Get timepoints
-        timepoints_node = dom.getElementsByTagName("Timepoints")
-        if timepoints_node.getLength() > 0:
-            last_nodes = timepoints_node.item(0).getElementsByTagName("last")
-            if last_nodes.getLength() > 0:
-                nbr_tp = int(last_nodes.item(0).getTextContent()) + 1
-    except Exception as e:
-        # log.exception includes the traceback when available
-        try:
-            log.exception("Error extracting metadata from XML: %s", e)
-        except Exception:
-            log.error("Error extracting metadata from XML: %s", str(e))
-    finally:
-        # Ensure the Java reader is closed to free resources
-        try:
-            if reader is not None:
-                reader.close()
-        except Exception:
-            pass
-
-    xml_metadata = {
-        "channels_count": nbr_chnl,
-        "illuminations_count": nbr_ill,
-        "timepoints_count": nbr_tp,
-    }
-
-    return xml_metadata
+    command.run(
+        FuseBigStitcherDatasetIntoOMETiffCommand,
+        True,  # seems to indicate whether to run the command headless or not
+        "xml_bigstitcher_file",
+        project_path,
+        "output_path_directory",
+        result_path,
+        "range_channels",
+        range_channels,
+        "range_slices",
+        range_slices,
+        "range_frames",
+        range_frames,
+        "n_resolution_levels",
+        n_resolution_levels,
+        "fusion_method",
+        fusion_method,
+        "use_lzw_compression",
+        use_lzw_compression,
+        "split_slices",
+        split_slices,
+        "split_channels",
+        split_channels,
+        "split_frames",
+        split_frames,
+        "override_z_ratio",
+        override_z_ratio,
+        "z_ratio",
+        z_ratio,
+        "use_interpolation",
+        use_interpolation,
+    ).get()
