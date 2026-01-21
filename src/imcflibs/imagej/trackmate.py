@@ -236,20 +236,22 @@ def spot_filtering(
 
 
 def set_spotfilter(settings, filter_key, filter_value):
-    """Sets a TrackMate spot filter with specified filter key and values.
+    """Set a TrackMate spot filter with specified filter key and values.
 
     Parameters
     ----------
     settings : fiji.plugin.trackmate.Settings
-        Dictionary containing all the settings to use for TrackMate.
-    filter_name : str
-        The name of the filter to be applied. You must use the keys of the features, not their name.
-          Here is the table of the feature keys and names for the spot features:
-          https://imagej.net/plugins/trackmate/scripting/trackmate-detectors-trackers-keys
+        Settings object to use for TrackMate.
+    filter_key : str
+        The key-name of the filter to be applied (as opposed to the filter
+        "name" shown in ImageJ. Refer to the spot features table on the related
+        ImageJ wiki page:
+        https://imagej.net/plugins/trackmate/scripting/trackmate-detectors-trackers-keys#the-feature-penalty-map
     filter_value : list
-        A list containing two values for the filter. The first value is
-        applied as an above-threshold filter, and the second as a below-threshold filter.
-    
+        A list containing two values for the filter. The first value is applied
+        as an above-threshold filter, and the second as a below-threshold
+        filter.
+
     Returns
     -------
     Settings
@@ -257,10 +259,12 @@ def set_spotfilter(settings, filter_key, filter_value):
 
     Example
     -------
-    >>> # Set an above-threshold filter value for spot "QUALITY" without a below-threshold value
-    >>> tm_settings = set_trackmate_spotfilter(tm_settings, 'QUALITY', [120, None])
+
+    To set an above-threshold filter value for spot `QUALITY` without a
+    below-threshold value use:
+
+    >>> settings = set_trackmate_spotfilter(tm_settings, 'QUALITY', [120, None])
     """
-    
     settings.addAllAnalyzers()
     if filter_value[0] != None:
         filter_low = FeatureFilter(filter_key, filter_value[0], True)
@@ -270,7 +274,6 @@ def set_spotfilter(settings, filter_key, filter_value):
         settings.addSpotFilter(filter_high)
 
     return settings
-
 
 
 def sparse_lap_tracker(settings):

@@ -1,5 +1,6 @@
 """Helper functions to work with filenames, directories etc."""
 
+import os
 import os.path
 import platform
 import re
@@ -427,3 +428,44 @@ if platform.python_implementation() == "Jython":  # pragma: no cover
     exists = jython_fiji_exists
 else:
     exists = os.path.exists
+
+
+def join_files_with_channel_suffix(files, nchannels):
+    """Join filenames and append channel-suffixed copies.
+
+    For each filename in `files`, return a list where original filenames
+    appear first followed by copies with suffixes `_0` .. `_{n-2}`
+    (inserted before the file extension). This is suitable for passing
+    to Bioformats/Jython in ``show_list`` mode when each channel is stored
+    as a separate file.
+
+    Parameters
+    ----------
+    files : list or tuple
+        List or tuple of filename strings.
+    nchannels : int
+        Number of channels (>=1). If ``nchannels`` is 1 no suffixed copies
+        are added.
+
+    Returns
+    -------
+    list of str
+        Ordered list of filenames (originals then suffixed copies).
+    """
+    if not files:
+        return ""
+    try:
+        x = range(int(nchannels) - 1)
+    except Exception:
+        x = [0]
+    suff = "_" + str(x)
+    out = []
+    # Keep original order, then add suffixed copies
+    for f in files:
+        out.append(f)
+    for i in x:
+        suff = "_" + str(i)
+        for f in files:
+            base, ext = os.path.splitext(f)
+            out.append(base + suff + ext)
+    return out
