@@ -95,6 +95,17 @@ def test_define_dataset_auto_tile(tmp_path, caplog):
         + result_folder
         + "] "
         + "check_stack_sizes "
+        + "setups_per_partition=0 "
+        + "use_deflate_compression "
+    )
+
+    # Construct the final call to ImageJ
+    final_call = "IJ.run(cmd=[%s], params=[%s])" % (cmd, options)
+
+    # Define the dataset using the "Auto-Loader" option
+    bdv.define_dataset_auto(project_filename, file_info["path"], bf_series_type)
+    # Check if the final call is in the log
+    assert final_call == caplog.messages[0]
         + "split_hdf5 "
         + "timepoints_per_partition=1 "
         + "setups_per_partition=0 "
@@ -160,8 +171,6 @@ def test_define_dataset_auto_angle(tmp_path, caplog):
         + "] "
         + "check_stack_sizes "
         + "apply_angle_rotation "
-        + "split_hdf5 "
-        + "timepoints_per_partition=1 "
         + "setups_per_partition=0 "
         + "use_deflate_compression "
     )
