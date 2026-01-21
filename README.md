@@ -32,6 +32,34 @@ it.
 Developed and provided by the [Imaging Core Facility (IMCF)][imcf] of the
 Biozentrum, University of Basel, Switzerland.
 
+## Installation Instructions
+
+### Required Update Sites
+
+After a fresh install of [Fiji](https://fiji.sc/), navigate to *Help* -> *Update* and in the resulting window, press *Manage Update Sites*. Here, search for and tick the following necessary update sites for this package. 
+
+- ImageJ
+- Fiji
+- 3D ImageJ-Suite
+- clij2
+- IJPB-plugins
+- IMCF Uni Basel
+- StarDist
+- CALM
+- TrackMate-Cellpose
+- TrackMate-Helper
+- TrackMate-StarDist
+- TrackMate-Weka
+- TrackMate-MorpholibJ
+
+The **`IMCF Uni Basel`** update-site will supply the necessary `.jar` to run the functions contained in this package, but alternatively, the most up-to-date `.jar` for this package can be always found on the [Scijava Maven repository][scijava-1.5.0], which links to, for example, the `1.5.0` version of `python-imcflibs`.
+
+If you manually download the `.jar` from Scijava, extract the zip folder, and place the `.jar` file in the `\jars` folder of your Fiji installation, e.g `C:\Tools\Fiji.app\jars\`. 
+
+### Testing Installation
+
+To check the package's correct installation in Fiji, search for *Script Interpreter* in the Search bar, and type `:lang python`, followed by e.g. `import imcflibs.imagej.misc`. If no errors are shown, the installation was successful. Alternatively, you can scroll in the sidebar of the Interpreter to search for imcflibs.
+
 ## Example usage
 
 ### Shading correction / projection
@@ -69,3 +97,4 @@ correct_and_project(raw_image, out_path, model, "Maximum", ".ics")
 [apidocs]: https://imcf.one/apidocs/imcflibs/imcflibs.html
 [pdoc]: https://pdoc.dev/
 [pypi]: https://pypi.org/project/imcflibs/
+[scijava-1.5.0]: https://maven.scijava.org/#browse/browse:releases:ch%2Funibas%2Fbiozentrum%2Fimcf%2Fpython-imcflibs%2F1.5.0%2Fpython-imcflibs-1.5.0.jar
