@@ -69,6 +69,9 @@ Then simply that file in the `\jars\` folder of your Fiji installation, e.g
 `D:\Development\Fiji.app\jars\` or `/opt/Fiji.app/jars/`, possibly removing
 other versions of the same package from that folder - then (re-)start Fiji.
 
+If you'd prefer to use the cutting-edge version from GitHub, look into the
+[development instructions](DEVELOPMENT.md) for details.
+
 ### Installation Testing
 
 To check the package's correct installation in Fiji, search for *Script
