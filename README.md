@@ -97,7 +97,7 @@ correct_and_project(raw_image, out_path, model, "Maximum", ".ics")
 [imagej2]: https://imagej.net
 [fiji]: https://fiji.sc
 [jython3]: https://www.jython.org/jython-3-roadmap
-[sj_maven]: https://maven.scijava.org/#nexus-search;gav~ch.unibas.biozentrum.imcf~~~~
+[sj_maven]: https://maven.scijava.org/service/rest/repository/browse/releases/ch/unibas/biozentrum/imcf/
 [imcf_updsite]: https://imagej.net/list-of-update-sites/
 [script_split]: https://github.com/imcf/imcf-fiji-scripts/blob/master/src/main/resources/scripts/Plugins/IMCF_Utilities/Convert/Split_TIFFs_By_Channels_And_Slices.py
 [script_fvstitch]: https://github.com/imcf/imcf-fiji-scripts/blob/master/src/main/resources/scripts/Plugins/IMCF_Utilities/Stitching_Registration/FluoView_OIF_OIB_OIR_Simple_Stitcher.py
