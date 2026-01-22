@@ -1,6 +1,6 @@
 # Testing 🧪🧫 in Fiji / ImageJ2
 
-## Using `pytest` 🐍🔬 and Python 3 for plain Python code
+## Using pytest 🐍🔬 and Python 3 for plain Python code
 
 Those parts of the package that do not interact / depend on ImageJ objects can
 be tested via [`pytest`][pytest] up to a certain level, some (most?) of them
@@ -44,7 +44,7 @@ specific tests, use e.g.
 pytest tests/bdv/test_processingoptions.py
 ```
 
-## Using `pytest` 🐍🔬 and Python 2 for plain Python code
+## Using pytest 🐍🔬 and Python 2 for plain Python code
 
 For running [`pytest`][pytest] in a C-Python 2 environment, things are slightly
 more complicated than the approach described for Python 3 above as `pip` for
