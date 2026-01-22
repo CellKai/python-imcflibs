@@ -2,6 +2,12 @@
 
 # Changelog 🧾
 
+## 2.0.0
+
+### Changed
+
+* Minimum required version for [python-micrometa] increased to `15.2.3`.
+
 ## 1.5.0
 
 This release brings a lot of additions, not all changes and functions are
@@ -271,3 +277,5 @@ Utilities for filtering and thresholding.
 * `imcflibs.pathtools.listdir_matching` now has an additional optional argument
   `sort` (defaulting to `False`) to request the resulting list to be sorted.
 * Many improvements / clarifications in function docstrings.
+
+[python-micrometa]: https://pypi.org/project/python-micrometa/
