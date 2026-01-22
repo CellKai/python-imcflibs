@@ -54,7 +54,7 @@ following necessary update sites for this package.
 The **`IMCF Uni Basel`** update-site will supply the necessary `.jar` to run the
 functions contained in this package, but alternatively, the most up-to-date
 `.jar` for this package can be always found on the [Scijava Maven
-repository][scijava-1.5.0], which links to, for example, the `1.5.0` version of
+repository][sj_maven], which links to, for example, the `1.5.0` version of
 `python-imcflibs`.
 
 If you manually download the `.jar` from Scijava, extract the zip folder, and
@@ -106,4 +106,3 @@ correct_and_project(raw_image, out_path, model, "Maximum", ".ics")
 [apidocs]: https://imcf.one/apidocs/imcflibs/imcflibs.html
 [pdoc]: https://pdoc.dev/
 [pypi]: https://pypi.org/project/imcflibs/
-[scijava-1.5.0]: https://maven.scijava.org/#browse/browse:releases:ch%2Funibas%2Fbiozentrum%2Fimcf%2Fpython-imcflibs%2F1.5.0%2Fpython-imcflibs-1.5.0.jar
