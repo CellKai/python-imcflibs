@@ -35,7 +35,7 @@ Two ways of installing the `imcflibs` package are described here, the "*easy*"
 one through the *Fiji Update Sites* and the "*manual*" method using packages
 explicitly downloaded from [SciJava Maven][sj_maven].
 
-### Alternative 1: Update Sites Installation
+### 🧿 Default: Installation via Update Sites
 
 After a fresh install of [Fiji], navigate to *Help* -> *Update* and in the
 resulting window, press *Manage Update Sites*. Here, search for and tick the
@@ -58,14 +58,19 @@ following necessary update sites for this package.
 The **`IMCF Uni Basel`** update-site will always provide the latest compatible
 combination of *official*`.jar` file to use this package.
 
-### Alternative 2: Development Installation
+### 🏗 Alternative: SciJava Maven Package 👷
 
-Alternatively, the most up-to-date `.jar` for this package can be always found
-on the [Scijava Maven repository][sj_maven]. Navigate to the `python-imcflibs`
-folder, pick the desired version (can also be a pre-release) and download the
-contained `.jar` file, e.g. `python-imcflibs-2.0.0.jar`.
+💡 **IMPORTANT:** 💡 same as for the *default* installation previously
+described, you will need to enable **all Update Sites listed above** in your
+Fiji as well when using the method described here!
 
-Then simply that file in the `\jars\` folder of your Fiji installation, e.g
+The most up-to-date `.jar` (or any other published version, including
+pre-releases) for this package can be always found on the [Scijava Maven
+repository][sj_maven]. Navigate to the `python-imcflibs` folder, pick the
+desired version (can also be a pre-release) and download the contained `.jar`
+file, e.g. `python-imcflibs-2.0.0.jar`.
+
+Then simply that file in the `jars` folder of your Fiji installation, e.g
 `D:\Development\Fiji.app\jars\` or `/opt/Fiji.app/jars/`, possibly removing
 other versions of the same package from that folder - then (re-)start Fiji.
 
