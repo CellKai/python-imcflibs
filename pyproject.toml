@@ -36,7 +36,7 @@ requires = ["poetry-core"]
 
 [tool.ruff.lint]
 exclude = [
-  "tests/interactive-imagej/*"
+  "tests/interactive-imagej/*", # no linting for the interactive test scripts
 ]
 
 select = [
