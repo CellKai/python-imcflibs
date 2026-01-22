@@ -10,9 +10,8 @@
 [![DOI](https://zenodo.org/badge/156891364.svg)][doi]
 
 This package contains a diverse collection of Python functions dealing with
-paths, I/O (file handles, ...), strings etc. and tons of [Fiji][fiji] /
-[ImageJ2][imagej] convenience wrappers to simplify scripting and reduce
-cross-script redundanciees.
+paths, I/O (file handles, ...), strings etc. and tons of [Fiji] / [ImageJ2]
+convenience wrappers to simplify scripting and reduce cross-script redundancies.
 
 Initially this has been a multi-purpose package where a substantial part had
 been useful in **CPython** as well. However, since the latest Jython release is
@@ -25,8 +24,7 @@ Uni Basel`** [update site][imcf_updsite] to your ImageJ installation.
 
 The [`pip install`able package][pypi] is probably only useful for two cases:
 running `pytest` (where applicable) and rendering [HTML-based API docs][apidocs]
-using [`pdoc`][pdoc]. Let us know in case you're having another use case 🎪 for
-it.
+using [pdoc]. Let us know in case you're having another use case 🎪 for it.
 
 Developed and provided by the [Imaging Core Facility (IMCF)][imcf] of the
 Biozentrum, University of Basel, Switzerland.
@@ -96,7 +94,7 @@ correct_and_project(raw_image, out_path, model, "Maximum", ".ics")
 * See the [FluoView_OIF_OIB_OIR_Simple_Stitcher.py][script_fvstitch] script.
 
 [imcf]: https://www.biozentrum.unibas.ch/imcf
-[imagej]: https://imagej.net
+[imagej2]: https://imagej.net
 [fiji]: https://fiji.sc
 [jython3]: https://www.jython.org/jython-3-roadmap
 [sj_maven]: https://maven.scijava.org/#nexus-search;gav~ch.unibas.biozentrum.imcf~~~~
