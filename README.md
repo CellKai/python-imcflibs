@@ -87,11 +87,11 @@ correct_and_project(raw_image, out_path, model, "Maximum", ".ics")
 
 ### Split TIFFs by channels and slices
 
-* See the [Split_TIFFs_By_Channels_And_Slices.py][script_split] script.
+- See the [Split_TIFFs_By_Channels_And_Slices.py][script_split] script.
 
 ### Use status and progress bar updates
 
-* See the [FluoView_OIF_OIB_OIR_Simple_Stitcher.py][script_fvstitch] script.
+- See the [FluoView_OIF_OIB_OIR_Simple_Stitcher.py][script_fvstitch] script.
 
 [imcf]: https://www.biozentrum.unibas.ch/imcf
 [imagej2]: https://imagej.net
