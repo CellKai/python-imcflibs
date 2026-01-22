@@ -31,7 +31,11 @@ Biozentrum, University of Basel, Switzerland.
 
 ## Installation Instructions
 
-### Required Update Sites
+Two ways of installing the `imcflibs` package are described here, the "*easy*"
+one through the *Fiji Update Sites* and the "*manual*" method using packages
+explicitly downloaded from [SciJava Maven][sj_maven].
+
+### Alternative 1: Update Sites Installation
 
 After a fresh install of [Fiji], navigate to *Help* -> *Update* and in the
 resulting window, press *Manage Update Sites*. Here, search for and tick the
@@ -51,17 +55,21 @@ following necessary update sites for this package.
 - TrackMate-Weka
 - TrackMate-MorpholibJ
 
-The **`IMCF Uni Basel`** update-site will supply the necessary `.jar` to run the
-functions contained in this package, but alternatively, the most up-to-date
-`.jar` for this package can be always found on the [Scijava Maven
-repository][sj_maven], which links to, for example, the `1.5.0` version of
-`python-imcflibs`.
+The **`IMCF Uni Basel`** update-site will always provide the latest compatible
+combination of *official*`.jar` file to use this package.
 
-If you manually download the `.jar` from Scijava, extract the zip folder, and
-place the `.jar` file in the `\jars` folder of your Fiji installation, e.g
-`C:\Tools\Fiji.app\jars\`.
+### Alternative 2: Development Installation
 
-### Testing Installation
+Alternatively, the most up-to-date `.jar` for this package can be always found
+on the [Scijava Maven repository][sj_maven]. Navigate to the `python-imcflibs`
+folder, pick the desired version (can also be a pre-release) and download the
+contained `.jar` file, e.g. `python-imcflibs-2.0.0.jar`.
+
+Then simply that file in the `\jars\` folder of your Fiji installation, e.g
+`D:\Development\Fiji.app\jars\` or `/opt/Fiji.app/jars/`, possibly removing
+other versions of the same package from that folder - then (re-)start Fiji.
+
+### Installation Testing
 
 To check the package's correct installation in Fiji, search for *Script
 Interpreter* in the Search bar, and type `:lang python`, followed by e.g.
