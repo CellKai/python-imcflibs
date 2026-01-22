@@ -15,10 +15,9 @@ paths, I/O (file handles, ...), strings etc. and tons of [Fiji][fiji] /
 cross-script redundanciees.
 
 Initially this has been a multi-purpose package where a substantial part had
-been useful in **CPython** as well. However, since the latest Jython
-release is still based on Python 2.7 (see the [Jython 3 roadmap][jython3] for
-more info), *imcflibs* is now basically limited to the **Fiji / ImageJ2
-ecosystem**.
+been useful in **CPython** as well. However, since the latest Jython release is
+still based on Python 2.7 (see the [Jython 3 roadmap][jython3] for more info),
+*imcflibs* is now basically limited to the **Fiji / ImageJ2 ecosystem**.
 
 Releases are made through Maven and published to the [SciJava Maven
 repository][sj_maven]. The easiest way to use the lib is by adding the **`IMCF
@@ -36,7 +35,9 @@ Biozentrum, University of Basel, Switzerland.
 
 ### Required Update Sites
 
-After a fresh install of [Fiji](https://fiji.sc/), navigate to *Help* -> *Update* and in the resulting window, press *Manage Update Sites*. Here, search for and tick the following necessary update sites for this package. 
+After a fresh install of [Fiji], navigate to *Help* -> *Update* and in the
+resulting window, press *Manage Update Sites*. Here, search for and tick the
+following necessary update sites for this package.
 
 - ImageJ
 - Fiji
@@ -52,13 +53,23 @@ After a fresh install of [Fiji](https://fiji.sc/), navigate to *Help* -> *Update
 - TrackMate-Weka
 - TrackMate-MorpholibJ
 
-The **`IMCF Uni Basel`** update-site will supply the necessary `.jar` to run the functions contained in this package, but alternatively, the most up-to-date `.jar` for this package can be always found on the [Scijava Maven repository][scijava-1.5.0], which links to, for example, the `1.5.0` version of `python-imcflibs`.
+The **`IMCF Uni Basel`** update-site will supply the necessary `.jar` to run the
+functions contained in this package, but alternatively, the most up-to-date
+`.jar` for this package can be always found on the [Scijava Maven
+repository][scijava-1.5.0], which links to, for example, the `1.5.0` version of
+`python-imcflibs`.
 
-If you manually download the `.jar` from Scijava, extract the zip folder, and place the `.jar` file in the `\jars` folder of your Fiji installation, e.g `C:\Tools\Fiji.app\jars\`. 
+If you manually download the `.jar` from Scijava, extract the zip folder, and
+place the `.jar` file in the `\jars` folder of your Fiji installation, e.g
+`C:\Tools\Fiji.app\jars\`.
 
 ### Testing Installation
 
-To check the package's correct installation in Fiji, search for *Script Interpreter* in the Search bar, and type `:lang python`, followed by e.g. `import imcflibs.imagej.misc`. If no errors are shown, the installation was successful. Alternatively, you can scroll in the sidebar of the Interpreter to search for imcflibs.
+To check the package's correct installation in Fiji, search for *Script
+Interpreter* in the Search bar, and type `:lang python`, followed by e.g.
+`import imcflibs.imagej.misc`. If no errors are shown, the installation was
+successful. Alternatively, you can scroll in the sidebar of the Interpreter to
+search for imcflibs.
 
 ## Example usage
 
