@@ -57,11 +57,12 @@ def parse_url(client, omero_str):
     >>> for wrapper in img_wrappers:
     >>>    imp = wpr.toImagePlus(client)
     """
+    if omero_str is None or str(omero_str).strip() == "":
+        raise ValueError("No OMERO link or image ID provided.")
+
     # Sanitize the string
-    if omero_str is None:
-        return []
     omero_str = omero_str.strip()
-    
+
     image_ids = []
     dataset_ids = []
     image_wpr_list = []
