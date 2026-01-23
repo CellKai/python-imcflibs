@@ -84,7 +84,7 @@ some basic, semi-interactive tests the following conventions are being used:
 * Any *interactive* test script should start with a header similar to the one
   described below. Paths to input data *inside* the test scripts **has** to be
   relative to the location of the `sample-data` repository mentioned above. This
-  will allow for a fairly okayish testing workflow like this:
+  will allow for a fairly okay-ish testing workflow like this:
   * Make your changes in VS Code, then trigger a build by pressing `Shift` +
   `Ctrl` + `B`. If things are configured as described in the *DEVELOPMENT*
   document, the resulting `.jar` file will be automatically placed in Fiji's
