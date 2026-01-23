@@ -6,9 +6,9 @@ Those parts of the package that do not interact / depend on ImageJ objects can
 be tested via [`pytest`][pytest] up to a certain level, some (most?) of them
 should even work in a Python 3 environment.
 
-To perform those tests, the packges otherwise provided by ImageJ need to be
-mocked using the `imcf-fiji-mocks` package. For seting up a *venv* use the steps
-described here:
+To perform those tests, the packages otherwise provided by ImageJ need to be
+mocked using the `imcf-fiji-mocks` package. For setting up a *venv* use the
+steps described here:
 
 ```bash
 # check if we're "inside" the repo already, otherwise clone it here:
