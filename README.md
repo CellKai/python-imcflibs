@@ -70,7 +70,7 @@ repository][sj_maven]. Navigate to the `python-imcflibs` folder, pick the
 desired version (can also be a pre-release) and download the contained `.jar`
 file, e.g. `python-imcflibs-2.0.0.jar`.
 
-Then simply that file in the `jars` folder of your Fiji installation, e.g
+Then simply place that file in the `jars` folder of your Fiji installation, e.g
 `D:\Development\Fiji.app\jars\` or `/opt/Fiji.app/jars/`, possibly removing
 other versions of the same package from that folder - then (re-)start Fiji.
 
