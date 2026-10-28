@@ -51,6 +51,24 @@ def test_save_script_parameters(tmp_path, monkeypatch, caplog):
     assert contents == "AAA: aaa\nBBB: bbb\n"
 
 
+def test_save_script_parameters_skip_whole_names(tmp_path, monkeypatch, caplog):
+    """Only whole names are skipped, case insensitive, not substrings."""
+    caplog.set_level(logging.DEBUG)
+    caplog.clear()
+    monkeypatch.setattr(imcflibs.imagej.misc, "_is_password_style", lambda item: False)
+
+    script_module = ScriptModule(
+        input_names=["rm", "fusion_format", "commander"],
+        inputs={"rm": "roimanager", "fusion_format": "TIFF", "commander": "x"},
+    )
+    script_globals = {"org.scijava.script.ScriptModule": script_module}
+    save_script_parameters(script_globals, destination=tmp_path)
+
+    with open(str(tmp_path) + "/script_parameters.txt", "r") as f:
+        contents = f.read()
+    assert contents == "fusion_format: TIFF\ncommander: x\n"
+
+
 def test_bytes_to_human_readable_simple():
     """Ensure common sizes are formatted into human-readable strings."""
     assert bytes_to_human_readable(500) == "500.0 bytes"

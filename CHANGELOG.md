@@ -99,6 +99,9 @@ multiple modules. For detailed information, please refer to the
       fusion, TIFF `filename_addition` and output base name.
   * `phase_correlation_pairwise_shifts_calculation`, `filter_pairwise_shifts`
       and `optimize_and_apply_shifts`: optional `backup_xml` (default `True`).
+* `imcflibs.imagej.misc.save_script_parameters` skips only parameters whose
+    whole name is in the skip list (`fusion_format` was skipped because it
+    contains `RM`).
 * `imcflibs.imagej.bdv` can be imported without the PTBIOP update site: the
     BIOP command is only imported in `fuse_dataset_bdvp`.
 
