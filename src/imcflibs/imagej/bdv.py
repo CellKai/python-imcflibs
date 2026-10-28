@@ -70,6 +70,7 @@ def run_command(command, options):
     function starts the class from `PLUGIN_CLASSES` and hands over the macro
     options the same way `IJ.run()` does. Commands without a known class (and
     environments without `IJ.runPlugIn`, e.g. the test mocks) use `IJ.run()`.
+    See https://github.com/imcf/python-imcflibs/issues/158 for the details.
 
     Parameters
     ----------

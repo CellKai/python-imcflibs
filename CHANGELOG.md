@@ -24,7 +24,7 @@ multiple modules. For detailed information, please refer to the
     plugin class instead of its menu name. The legacy `SPIM_Registration`
     plugin registers several of the same command names, so `IJ.run()` could
     start the old plugin instead (e.g. a `VerifyError` in "Register Dataset
-    based on Interest Points"). All MVR / BigStitcher wrappers use it.
+    based on Interest Points"). All MVR / BigStitcher wrappers use it (#158).
 * `imcflibs.imagej.bdv.fmt_ransac_options` formats the RANSAC options of the
     interest point registration (minimal number of inliers, iterations,
     inlier ratio, maximal trust) for multiview-reconstruction 9.x.
@@ -69,7 +69,7 @@ multiple modules. For detailed information, please refer to the
     object and change the ImageJ command to "Resave as HDF5 (local)" for better
     accuracy.
 * Match the dialogs of multiview-reconstruction 9.x and BigStitcher 3.x
-    (checked against the 9.0.11 / 3.0.8 jars):
+    (checked against the 9.0.11 / 3.0.8 jars, #159):
   * `imcflibs.imagej.bdv.ProcessingOptions`: timepoints are spelled
       "Timepoint" (`[Single Timepoint (Select from List)]`, `[Timepoint N]`)
       and "TimePoints" in the grouping choices (`[Average TimePoints]`).
@@ -94,7 +94,7 @@ multiple modules. For detailed information, please refer to the
       compression, block sizes, pyramid levels, sharding and single-container
       settings. Compression and block sizes are always passed (MVR's initial
       defaults), since MVR keeps the values of the previous fusion of the
-      session; the pyramid levels default to MVR's proposal. Processing
+      session (#160); the pyramid levels default to MVR's proposal. Processing
       selectors are passed on; new optional bounding box, `preserve_original`, non-rigid
       fusion, TIFF `filename_addition` and output base name.
   * `phase_correlation_pairwise_shifts_calculation`, `filter_pairwise_shifts`
