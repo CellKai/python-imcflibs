@@ -27,9 +27,9 @@ multiple modules. For detailed information, please refer to the
     based on Interest Points"). All MVR / BigStitcher wrappers use it.
 * `imcflibs.imagej.bdv.fmt_ransac_options` formats the RANSAC options of the
     interest point registration (minimal number of inliers, iterations,
-    inlier ratio, maximal trust) for multiview-reconstruction 8.1.2 / 9.x.
-* `imcflibs.imagej.bdv.export_choice` reads the `export=` choice of the
-    N5-API fusion export from the installed MVR (`OME-ZARR` vs. `OME-ZARR v3`).
+    inlier ratio, maximal trust) for multiview-reconstruction 9.x.
+* `imcflibs.imagej.bdv.export_choice` gives the `export=` choice of the
+    N5-API fusion export of MVR 9.x (`[N5]`, `[OME-ZARR v3]`).
 
 #### New functions in `imcflibs.imagej.misc`
 
@@ -68,8 +68,8 @@ multiple modules. For detailed information, please refer to the
 * `imcflibs.imagej.bdv.resave_as_h5`: use the correct processing options
     object and change the ImageJ command to "Resave as HDF5 (local)" for better
     accuracy.
-* Match the dialogs of multiview-reconstruction 8.1.2 / 9.x and BigStitcher
-    2.6.1 / 3.x (checked against the jars):
+* Match the dialogs of multiview-reconstruction 9.x and BigStitcher 3.x
+    (checked against the 9.0.11 / 3.0.8 jars):
   * `imcflibs.imagej.bdv.ProcessingOptions`: timepoints are spelled
       "Timepoint" (`[Single Timepoint (Select from List)]`, `[Timepoint N]`)
       and "TimePoints" in the grouping choices (`[Average TimePoints]`).
@@ -82,7 +82,7 @@ multiple modules. For detailed information, please refer to the
       regularization, grouping, view / point selection, descriptor parameters,
       search radius, RANSAC options, strategy, fixed views, pre-alignment.
   * `imcflibs.imagej.bdv.optimize_and_apply_shifts`: new optional `strategy`,
-      `fix_groups` and `pre_align` (MVR >= 8 only pre-aligns with the
+      `fix_groups` and `pre_align` (MVR 9 only pre-aligns with the
       `pre-align` key; default on, as MVR 7 always did).
   * `imcflibs.imagej.bdv.detect_interest_points`: new optional label,
       downsampling, fixed intensity range and grouping.

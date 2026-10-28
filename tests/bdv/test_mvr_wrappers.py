@@ -1,7 +1,7 @@
 """Tests for the MVR / BigStitcher command wrappers in the BDV module.
 
 The expected strings use the dialog keys and choices of multiview-reconstruction
-8.1.2 / 9.0.11 and BigStitcher 2.6.1 / 3.0.8.
+9.0.11 and BigStitcher 3.0.8.
 """
 
 import logging
@@ -64,11 +64,10 @@ def test_fmt_ransac_options_defaults():
 
 
 def test_fmt_ransac_options_all():
-    """Inliers, inlier ratio (both MVR 8 and 9 keys) and maximal trust."""
+    """Inliers, inlier ratio and maximal trust (advanced RANSAC dialog)."""
     assert bdv.fmt_ransac_options(min_inliers=3, min_inlier_ratio=0.1, max_trust=4) == (
         "allowed_error_for_ransac=5 ransac_iterations=[Normal (10,000)] "
         + "minmal_number_of_inliers=3 "
-        + "minmal_inlier_ratio=0.1 "
         + "advanced_ransac_options filter_ransac "
         + "minimal_inlier_ratio=0.1 "
         + "maximal_trust=4 "
@@ -236,11 +235,17 @@ def test_fuse_dataset_tiff(caplog):
     assert last_call(caplog) == ij_run("Image Fusion", expected)
 
 
-def test_fuse_dataset_n5(caplog, monkeypatch):
+def test_export_choice():
+    """Export choices of MVR 9.x; HDF5 is not available."""
+    assert bdv.export_choice("N5") == "[N5]"
+    assert bdv.export_choice("OME-ZARR") == "[OME-ZARR v3]"
+    with pytest.raises(ValueError):
+        bdv.export_choice("HDF5")
+
+
+def test_fuse_dataset_n5(caplog):
     """N5 export: BDV/BigStitcher XML and multi-resolution keys."""
     caplog.set_level(logging.WARNING)
-    # the export choices are read from the installed MVR
-    monkeypatch.setattr(bdv, "export_choice", lambda export: "[%s]" % export)
     bdv.fuse_dataset(XML, result_path="/data/fused", export="N5", output_basename="out")
     call = last_call(caplog)
     assert "export=[N5] " in call

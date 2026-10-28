@@ -55,8 +55,8 @@ PLUGIN_CLASSES = {
     ),
 }
 """@private
-Plugin classes of the MVR / BigStitcher commands (identical in MVR 8.1.2 and
-9.0.11, BigStitcher 2.6.1 and 3.0.8)."""
+Plugin classes of the MVR / BigStitcher commands (multiview-reconstruction
+9.x, BigStitcher 3.x)."""
 
 
 def run_command(command, options):
@@ -1322,7 +1322,7 @@ def optimize_and_apply_shifts(
         (BigStitcher fixes nothing and does not fall back to a default view).
     pre_align : bool, optional
         Pre-align the tiles before the optimization, by default `True` (MVR
-        <= 7 always did; MVR >= 8 only if the `pre-align` key is given).
+        <= 7 always did; MVR 9 only if the `pre-align` key is given).
     backup_xml : bool, optional
         Copy the XML files to `xml-backup/` afterwards (default `True`).
     """
@@ -1478,9 +1478,9 @@ def fmt_ransac_options(
 ):
     """Format the RANSAC options of the interest point registration.
 
-    Valid for MVR 8.1.2 and 9.x. MVR 7 used an `inlier_factor` instead of an
-    absolute number of inliers and the iteration choices "Fast", "Normal", ...
-    without the counts.
+    Valid for multiview-reconstruction 9.x. MVR 7 used an `inlier_factor`
+    instead of an absolute number of inliers and the iteration choices "Fast",
+    "Normal", ... without the counts.
 
     Parameters
     ----------
@@ -1493,13 +1493,11 @@ def fmt_ransac_options(
         One of `Fast (1,000)`, `Normal (10,000)` (default), `Thorough (10^5)`,
         `Very thorough (10^6)`, `Ridiculous (10^7)`.
     min_inlier_ratio : float, optional
-        Minimal inlier ratio. By default `None`, i.e. MVR's default (0.1 in
-        8.1.2, 0.05 in 9.x). Key `minmal_inlier_ratio` in 8.1.2,
-        `minimal_inlier_ratio` in the advanced RANSAC dialog of 9.x; both are
-        set.
+        Minimal inlier ratio (advanced RANSAC dialog). By default `None`, i.e.
+        MVR's default (0.05; MVR 7 used 0.1).
     max_trust : float, optional
-        Maximal trust (factor of the median residual, 9.x only). By default
-        `None`, i.e. MVR's default (3 in 9.x; 8.1.2 always uses 4).
+        Maximal trust, a factor of the median residual (advanced RANSAC
+        dialog). By default `None`, i.e. MVR's default (3; MVR 7 used 4).
 
     Returns
     -------
@@ -1515,8 +1513,6 @@ def fmt_ransac_options(
     )
     if min_inliers is not None:
         options += "minmal_number_of_inliers=" + str(min_inliers) + " "
-    if min_inlier_ratio is not None:
-        options += "minmal_inlier_ratio=" + str(min_inlier_ratio) + " "
     if min_inlier_ratio is not None or max_trust is not None:
         options += "advanced_ransac_options filter_ransac "
         if min_inlier_ratio is not None:
@@ -1611,7 +1607,7 @@ def interest_points_registration(
         default; with a single timepoint that is `Fix first view`).
     pre_align : bool, optional
         Pre-align the views before the global optimization, by default `True`
-        (MVR <= 7 always did; MVR >= 8 only if the `pre-align` key is given).
+        (MVR <= 7 always did; MVR 9 only if the `pre-align` key is given).
     """
 
     if not processing_opts:
@@ -1815,15 +1811,13 @@ def duplicate_transformations(
 def export_choice(export):
     """Get the `export=` value of "OME-ZARR/N5/HDF5 export using N5-API".
 
-    The choices depend on the MVR version: `N5`, `OME-ZARR` and `HDF5` in MVR
-    <= 8.1.2; `N5`, `OME-ZARR v3`, `OME-ZARR v2 (deprecated)` and `HDF5
-    (currently not supported)` in 9.x. Read from the installed MVR
-    (`N5ApiTools.exportOptions()`).
+    Choices of multiview-reconstruction 9.x: `N5`, `OME-ZARR v3`, `OME-ZARR v2
+    (deprecated)` and `HDF5 (currently not supported)`.
 
     Parameters
     ----------
-    export : {`N5`, `OME-ZARR`, `HDF5`}
-        The format.
+    export : {`N5`, `OME-ZARR`}
+        The format; `OME-ZARR` is written as OME-ZARR v3.
 
     Returns
     -------
@@ -1833,22 +1827,15 @@ def export_choice(export):
     Raises
     ------
     ValueError
-        If the installed MVR offers no (supported) choice for the format.
+        For HDF5 (not available in MVR 9.x) and unknown formats.
     """
-    from net.preibisch.mvrecon.process.n5api import N5ApiTools
-
-    options = [str(o) for o in N5ApiTools.exportOptions()]
-    if export == "N5":
-        match = [o for o in options if o == "N5"]
-    elif export == "OME-ZARR":
-        match = [o for o in options if o.startswith("OME-ZARR") and "deprecated" not in o]
-    elif export == "HDF5":
-        match = [o for o in options if o == "HDF5"]
-    else:
-        match = []
-    if not match:
-        raise ValueError("No supported export option for %s in %s" % (export, options))
-    return "[" + match[0] + "]"
+    choices = {"N5": "[N5]", "OME-ZARR": "[OME-ZARR v3]"}
+    if export not in choices:
+        raise ValueError(
+            "No export option for %s in MVR 9.x (HDF5 is not available, use N5 "
+            "or OME-ZARR)" % export
+        )
+    return choices[export]
 
 
 def fuse_dataset(
@@ -1900,8 +1887,8 @@ def fuse_dataset(
     fusion_type : str, optional
         Type of fusion algorithm to use, by default `Avg, Blending`.
     compression : str, optional
-        Unused: the "OME-ZARR/N5/HDF5 export using N5-API" dialog of MVR 8.1.2
-        and 9.x has no compression field (it writes Zstandard). Kept for
+        Unused: the "OME-ZARR/N5/HDF5 export using N5-API" dialog of MVR 9.x
+        has no compression field (it writes Zstandard). Kept for
         compatibility.
     bounding_box : str, optional
         Name of the bounding box to fuse (without brackets), by default `All
