@@ -13,9 +13,6 @@ import os
 import shutil
 import sys
 
-from ch.epfl.biop.scijava.command.spimdata import (
-    FuseBigStitcherDatasetIntoOMETiffCommand,
-)
 from ij import IJ
 from java.io import File, FileInputStream, InputStreamReader
 from javax.xml.parsers import DocumentBuilderFactory
@@ -1710,6 +1707,12 @@ def fuse_dataset_bdvp(
     ...     use_interpolation=False,
     ... )
     """
+    # imported here: needs the PTBIOP update site, the other functions of this
+    # module do not
+    from ch.epfl.biop.scijava.command.spimdata import (
+        FuseBigStitcherDatasetIntoOMETiffCommand,
+    )
+
     file_info = pathtools.parse_path(project_path)
 
     if not result_path:
