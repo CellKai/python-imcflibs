@@ -40,6 +40,65 @@ MULTI_SINGLE_FILE = "[YES (all %ss in one file)]"
 MULTI_MULTI_FILE = "[YES (one file per %s)]"
 """@private"""
 
+PLUGIN_CLASSES = {
+    "Apply Transformations": "net.preibisch.mvrecon.fiji.plugin.Apply_Transformation",
+    "Define Multi-View Dataset": "net.preibisch.mvrecon.fiji.plugin.Define_Multi_View_Dataset",
+    "Detect Interest Points for Registration": (
+        "net.preibisch.mvrecon.fiji.plugin.Interest_Point_Detection"
+    ),
+    "Duplicate Transformations": "net.preibisch.mvrecon.fiji.plugin.Duplicate_Transformation",
+    "Image Fusion": "net.preibisch.mvrecon.fiji.plugin.Image_Fusion",
+    "Register Dataset based on Interest Points": (
+        "net.preibisch.mvrecon.fiji.plugin.Interest_Point_Registration"
+    ),
+    "Calculate pairwise shifts ...": "net.preibisch.stitcher.plugin.Calculate_Pairwise_Shifts",
+    "Filter pairwise shifts ...": "net.preibisch.stitcher.plugin.Filter_Pairwise_Shifts",
+    "Optimize globally and apply shifts ...": (
+        "net.preibisch.stitcher.plugin.Global_Optimization_Stitching"
+    ),
+}
+"""@private
+Plugin classes of the MVR / BigStitcher commands (identical in MVR 8.1.2 and
+9.0.11, BigStitcher 2.6.1 and 3.0.8)."""
+
+
+def run_command(command, options):
+    """Run an MVR / BigStitcher command by its plugin class.
+
+    `IJ.run()` looks a command up by its menu name. The legacy
+    `SPIM_Registration` plugin, which some Fiji installations still ship,
+    registers several of the same names (e.g. "Register Dataset based on
+    Interest Points", "Detect Interest Points for Registration", "Apply
+    Transformations"), so `IJ.run()` may start the old plugin instead. This
+    function starts the class from `PLUGIN_CLASSES` and hands over the macro
+    options the same way `IJ.run()` does. Commands without a known class (and
+    environments without `IJ.runPlugIn`, e.g. the test mocks) use `IJ.run()`.
+
+    Parameters
+    ----------
+    command : str
+        The menu command, e.g. `Image Fusion`.
+    options : str
+        The macro options string.
+    """
+    class_name = PLUGIN_CLASSES.get(command)
+    if class_name is None or not hasattr(IJ, "runPlugIn"):
+        IJ.run(command, str(options))
+        return
+
+    from ij import Macro
+    from java.lang import Thread
+
+    thread = Thread.currentThread()
+    # ImageJ only hands macro options to threads named "Run$_..."
+    if not thread.getName().startswith("Run$_"):
+        thread.setName("Run$_" + thread.getName())
+    Macro.setOptions(thread, str(options))
+    try:
+        IJ.runPlugIn(command, class_name, "")
+    finally:
+        Macro.setOptions(thread, None)
+
 
 class ProcessingOptions(object):
     """Helper to store processing options and generate parameter strings.
@@ -100,7 +159,8 @@ class ProcessingOptions(object):
         self._use_channel = "channels=[Average Channels]"
         self._use_illumination = "illuminations=[Average Illuminations]"
         self._use_tile = "tiles=[Average Tiles]"
-        self._use_timepoint = "timepoints=[Average Timepoints]"
+        # BigStitcher writes "TimePoint" (from the class name `TimePoint`)
+        self._use_timepoint = "timepoints=[Average TimePoints]"
 
         # 'treat_*' values are: "group", "compare" or "[treat individually]"
         self._treat_angles = "[treat individually]"
@@ -196,7 +256,7 @@ class ProcessingOptions(object):
         value : int or int-like
             The timepoint number to use for the grouping.
         """
-        self._use_timepoint = "timepoints=[use Timepoint %s]" % value
+        self._use_timepoint = "timepoints=[use TimePoint %s]" % value
         log.debug("New reference timepoint setting: %s", self._use_timepoint)
 
     ### process-X methods
@@ -514,7 +574,7 @@ class DefinitionOptions(object):
     >>> opts.fmt_acitt_options()
     ... multiple_angles=[NO (one angle)]
     ... multiple_channels=[YES (all channels in one file)]
-    ... multiple_illuminations_directions=[NO (one illumination direction)]
+    ... _____multiple_illumination_directions=[NO (one illumination direction)]
     ... multiple_tiles=[YES (all tiles in one file)]
     ... multiple_timepoints=[NO (one time-point)]
     """
@@ -651,7 +711,7 @@ class DefinitionOptions(object):
         """Format Angle / Channel / Illumination / Tile / Timepoint options.
 
         Build a string providing the `multiple_angles`, `multiple_channels`,
-        `multiple_illuminations_directions`, `multiple_tiles` and
+        `_____multiple_illumination_directions`, `multiple_tiles` and
         `multiple_timepoints` options that can be used in a BDV-related `IJ.run`
         call.
 
@@ -662,7 +722,8 @@ class DefinitionOptions(object):
         parameters = [
             "multiple_angles=" + self._angle_definition,
             "multiple_channels=" + self._channel_definition,
-            "multiple_illuminations_directions=" + self._illumination_definition,
+            # dialog label "_____Multiple_illumination_directions"
+            "_____multiple_illumination_directions=" + self._illumination_definition,
             "multiple_tiles=" + self._tile_definition,
             "multiple_timepoints=" + self._timepoint_definition,
         ]
@@ -751,19 +812,23 @@ def get_processing_settings(dimension, selection, value, range_end):
             % (selection, ", ".join(valid_selections))
         )
 
+    # the dialogs name timepoints "Timepoint" (capitalised), all other
+    # dimensions by their lower-case attribute name
+    label = "Timepoint" if dimension == "timepoint" else dimension
+
     if selection == "single":
-        processing_option = SINGLE % dimension
-        dimension_select = "processing_" + dimension + "=[" + dimension + " %s]" % value
+        processing_option = SINGLE % label
+        dimension_select = "processing_" + dimension + "=[" + label + " %s]" % value
 
     if selection == "multiple":
-        processing_option = MULTIPLE % dimension
+        processing_option = MULTIPLE % label
         dimension_list = ""
         for dimension_name in value:
             dimension_list += dimension + "_%s " % dimension_name
         dimension_select = dimension_list.rstrip()
 
     if selection == "range":
-        processing_option = RANGE % dimension
+        processing_option = RANGE % label
         dimension_select = (
             "process_following_"
             + dimension
@@ -915,7 +980,7 @@ def define_dataset_auto(
 
     log.debug(options)
 
-    IJ.run("Define Multi-View Dataset", str(options))
+    run_command("Define Multi-View Dataset", options)
 
 
 def define_dataset_manual(
@@ -978,7 +1043,7 @@ def define_dataset_manual(
     )
 
     log.debug("Manual dataset definition options: <%s>", options)
-    IJ.run("Define Multi-View Dataset", str(options))
+    run_command("Define Multi-View Dataset", options)
 
 
 def resave_as_h5(
@@ -1100,6 +1165,7 @@ def phase_correlation_pairwise_shifts_calculation(
     project_path,
     processing_opts=None,
     downsampling_xyz="",
+    backup_xml=True,
 ):
     """Calculate pairwise shifts using Phase Correlation.
 
@@ -1114,6 +1180,8 @@ def phase_correlation_pairwise_shifts_calculation(
     downsampling_xyz : list of int, optional
         Downsampling factors in X, Y and Z, for example `[4,4,4]`. By default
         empty which will result in BigStitcher choosing the factors.
+    backup_xml : bool, optional
+        Copy the XML files to `xml-backup/` afterwards (default `True`).
     """
 
     if not processing_opts:
@@ -1147,9 +1215,10 @@ def phase_correlation_pairwise_shifts_calculation(
     )
 
     log.debug("Calculate pairwise shifts options: <%s>", options)
-    IJ.run("Calculate pairwise shifts ...", str(options))
+    run_command("Calculate pairwise shifts ...", options)
 
-    backup_xml_files(file_info["path"], "phase_correlation_shift_calculation")
+    if backup_xml:
+        backup_xml_files(file_info["path"], "phase_correlation_shift_calculation")
 
 
 def filter_pairwise_shifts(
@@ -1158,6 +1227,7 @@ def filter_pairwise_shifts(
     max_r=1,
     max_shift_xyz="",
     max_displacement="",
+    backup_xml=True,
 ):
     """Filter the pairwise shifts based on different thresholds.
 
@@ -1175,6 +1245,8 @@ def filter_pairwise_shifts(
     max_displacement : int, optional
         Maximal displacement to keep. By default empty, meaning no filtering
         based on the displacement will be applied.
+    backup_xml : bool, optional
+        Copy the XML files to `xml-backup/` afterwards (default `True`).
     """
 
     file_info = pathtools.parse_path(project_path)
@@ -1209,9 +1281,10 @@ def filter_pairwise_shifts(
     )
 
     log.debug("Filter pairwise options: <%s>", options)
-    IJ.run("Filter pairwise shifts ...", str(options))
+    run_command("Filter pairwise shifts ...", options)
 
-    backup_xml_files(file_info["path"], "filter_pairwise_shifts")
+    if backup_xml:
+        backup_xml_files(file_info["path"], "filter_pairwise_shifts")
 
 
 def optimize_and_apply_shifts(
@@ -1219,6 +1292,11 @@ def optimize_and_apply_shifts(
     processing_opts=None,
     relative_error=2.5,
     absolute_error=3.5,
+    strategy="Two-Round using Metadata to align unconnected Tiles and "
+    + "iterative dropping of bad links",
+    fix_groups=None,
+    pre_align=True,
+    backup_xml=True,
 ):
     """Optimize the shifts and apply them to the dataset.
 
@@ -1234,12 +1312,30 @@ def optimize_and_apply_shifts(
         Relative alignment error (in px) to accept, by default `2.5`.
     absolute_error : float, optional
         Absolute alignment error (in px) to accept, by default `3.5`.
+    strategy : str, optional
+        The global optimization strategy (without brackets), by default
+        `Two-Round using Metadata to align unconnected Tiles and iterative
+        dropping of bad links`. Note: the plain variant is spelled `Two-Round
+        using metadata to align unconnected Tiles` (lower-case "m").
+    fix_groups : list of str, optional
+        Groups to fix, as in the checkbox labels `Fix_Group_<views>` cut at the
+        first space, e.g. `["0-0"]` if every view is its own group or
+        `["0-0,"]` if view 0 shares a group (`0-0, 0-24`). Keys that do not
+        exist are ignored, so both variants can be given. By default `None`
+        (BigStitcher fixes nothing and does not fall back to a default view).
+    pre_align : bool, optional
+        Pre-align the tiles before the optimization, by default `True` (MVR
+        <= 7 always did; MVR >= 8 only if the `pre-align` key is given).
+    backup_xml : bool, optional
+        Copy the XML files to `xml-backup/` afterwards (default `True`).
     """
 
     if not processing_opts:
         processing_opts = ProcessingOptions()
 
     file_info = pathtools.parse_path(project_path)
+
+    fix = "".join("fix_group_%s " % group for group in (fix_groups or []))
 
     options = (
         "select=["
@@ -1254,17 +1350,21 @@ def optimize_and_apply_shifts(
         + "absolute="
         + str(absolute_error)
         + " "
-        + "global_optimization_strategy=[Two-Round using Metadata to align unconnected "
-        + "Tiles and iterative dropping of bad links] "
+        + "global_optimization_strategy=["
+        + strategy
+        + "] "
         + "show_expert_grouping_options "
         + processing_opts.fmt_use_acitt()
         + processing_opts.fmt_how_to_treat()
+        + fix
+        + ("pre-align " if pre_align else "")
     )
 
     log.debug("Optimization and shifts application options: <%s>", options)
-    IJ.run("Optimize globally and apply shifts ...", str(options))
+    run_command("Optimize globally and apply shifts ...", options)
 
-    backup_xml_files(file_info["path"], "optimize_and_apply_shifts")
+    if backup_xml:
+        backup_xml_files(file_info["path"], "optimize_and_apply_shifts")
 
 
 def detect_interest_points(
@@ -1273,6 +1373,13 @@ def detect_interest_points(
     sigma=1.8,
     threshold=0.008,
     maximum_number=3000,
+    label="beads",
+    downsample_xy=8,
+    downsample_z=2,
+    min_intensity=None,
+    max_intensity=None,
+    group_tiles=True,
+    group_illuminations=False,
 ):
     """Run the "Detect Interest Points" command for registration.
 
@@ -1288,12 +1395,42 @@ def detect_interest_points(
         Minimum sigma for interest points detection, by default `1.8`.
     threshold : float, optional
         Threshold value for the interest point detection, by default `0.008`.
+        Relative to the intensity range (`min_intensity` .. `max_intensity`,
+        by default the min .. max of each view).
     maximum_number : int, optional
         Maximum number of interest points to use, by default `3000`.
+    label : str, optional
+        Label of the interest points, by default `beads`.
+    downsample_xy : int, optional
+        Downsampling in X and Y before the detection (1, 2, 4 or 8), by
+        default `8`.
+    downsample_z : int, optional
+        Downsampling in Z before the detection (1, 2, 4 or 8), by default `2`.
+    min_intensity, max_intensity : float, optional
+        Fixed intensity range for all views (`set_minimal_and_maximal_intensity`).
+        By default `None`: each view is normalised to its own min .. max, which
+        makes the threshold mean different things in bright and dim views.
+    group_tiles : bool, optional
+        Combine the tiles of a view into one detection, by default `True`.
+    group_illuminations : bool, optional
+        Combine the illuminations of a view, by default `False`.
     """
 
     if not processing_opts:
         processing_opts = ProcessingOptions()
+
+    if min_intensity is not None and max_intensity is not None:
+        intensity = (
+            "set_minimal_and_maximal_intensity "
+            + "minimal_intensity="
+            + str(min_intensity)
+            + " "
+            + "maximal_intensity="
+            + str(max_intensity)
+            + " "
+        )
+    else:
+        intensity = ""
 
     options = (
         "select=["
@@ -1302,13 +1439,20 @@ def detect_interest_points(
         + processing_opts.fmt_acitt_options()
         + processing_opts.fmt_acitt_selectors()
         + "type_of_interest_point_detection=Difference-of-Gaussian "
-        + "label_interest_points=beads "
+        + "label_interest_points="
+        + label
+        + " "
         + "limit_amount_of_detections "
-        + "group_tiles "
+        + ("group_tiles " if group_tiles else "")
+        + ("group_illuminations " if group_illuminations else "")
         + "subpixel_localization=[3-dimensional quadratic fit] "
         + "interest_point_specification=[Advanced ...] "
-        + "downsample_xy=8x "
-        + "downsample_z=2x "
+        + "downsample_xy="
+        + str(downsample_xy)
+        + "x "
+        + "downsample_z="
+        + str(downsample_z)
+        + "x "
         + "sigma="
         + str(sigma)
         + " "
@@ -1316,6 +1460,7 @@ def detect_interest_points(
         + str(threshold)
         + " "
         + "find_maxima "
+        + intensity
         + "maximum_number="
         + str(maximum_number)
         + " "
@@ -1324,15 +1469,96 @@ def detect_interest_points(
     )
 
     log.debug("Interest points detection options: <%s>", options)
-    IJ.run("Detect Interest Points for Registration", str(options))
+    run_command("Detect Interest Points for Registration", options)
+
+
+def fmt_ransac_options(
+    max_error=5,
+    min_inliers=None,
+    iterations="Normal (10,000)",
+    min_inlier_ratio=None,
+    max_trust=None,
+):
+    """Format the RANSAC options of the interest point registration.
+
+    Valid for MVR 8.1.2 and 9.x. MVR 7 used an `inlier_factor` instead of an
+    absolute number of inliers and the iteration choices "Fast", "Normal", ...
+    without the counts.
+
+    Parameters
+    ----------
+    max_error : float, optional
+        Allowed error for RANSAC in px, by default `5`.
+    min_inliers : int, optional
+        Minimal number of inliers per link (`minmal_number_of_inliers`, typo
+        as in MVR). By default `None`, i.e. MVR's default (12).
+    iterations : str, optional
+        One of `Fast (1,000)`, `Normal (10,000)` (default), `Thorough (10^5)`,
+        `Very thorough (10^6)`, `Ridiculous (10^7)`.
+    min_inlier_ratio : float, optional
+        Minimal inlier ratio. By default `None`, i.e. MVR's default (0.1 in
+        8.1.2, 0.05 in 9.x). Key `minmal_inlier_ratio` in 8.1.2,
+        `minimal_inlier_ratio` in the advanced RANSAC dialog of 9.x; both are
+        set.
+    max_trust : float, optional
+        Maximal trust (factor of the median residual, 9.x only). By default
+        `None`, i.e. MVR's default (3 in 9.x; 8.1.2 always uses 4).
+
+    Returns
+    -------
+    str
+    """
+    options = (
+        "allowed_error_for_ransac="
+        + str(max_error)
+        + " "
+        + "ransac_iterations=["
+        + iterations
+        + "] "
+    )
+    if min_inliers is not None:
+        options += "minmal_number_of_inliers=" + str(min_inliers) + " "
+    if min_inlier_ratio is not None:
+        options += "minmal_inlier_ratio=" + str(min_inlier_ratio) + " "
+    if min_inlier_ratio is not None or max_trust is not None:
+        options += "advanced_ransac_options filter_ransac "
+        if min_inlier_ratio is not None:
+            options += "minimal_inlier_ratio=" + str(min_inlier_ratio) + " "
+        if max_trust is not None:
+            options += "maximal_trust=" + str(max_trust) + " "
+    return options
 
 
 def interest_points_registration(
     project_path,
     processing_opts=None,
     rigid_timepoints=False,
+    label="beads",
+    transformation="Affine",
+    regularize_with="Affine",
+    regularization_lambda=0.1,
+    group_tiles=True,
+    group_illuminations=True,
+    group_channels=True,
+    merge_distance=5,
+    view_selection="Only compare overlapping views (according to current "
+    + "transformations)",
+    point_selection="Compare all interest point of overlapping views",
+    number_of_neighbors=3,
+    redundancy=1,
+    significance=3,
+    search_radius=None,
+    ransac_options=None,
+    strategy="Two-Round: Handle unconnected tiles, remove wrong links RELAXED "
+    + "(5.0x / 7.0px)",
+    fix_views=None,
+    pre_align=True,
 ):
     """Run the "Register Dataset based on Interest Points" command.
+
+    Uses the "Precise descriptor-based (translation invariant)" algorithm. The
+    defaults reproduce the earlier behaviour of this function (Affine,
+    regularised with Affine, all groups, RELAXED).
 
     Parameters
     ----------
@@ -1347,6 +1573,48 @@ def interest_points_registration(
         If set to `True` each timepoint will be considered as a rigid unit
         (useful e.g. if spatial registration has already been performed before).
         By default `False`.
+    label : str, optional
+        Label of the interest points, by default `beads`.
+    transformation : str, optional
+        `Translation`, `Rigid` or `Affine` (default).
+    regularize_with : str or None, optional
+        Model to regularize with (`Translation`, `Rigid`, `Affine`), by default
+        `Affine`; `None` for no regularization.
+    regularization_lambda : float, optional
+        Weight of the regularization model, by default `0.1`.
+    group_tiles, group_illuminations, group_channels : bool, optional
+        Combine the interest points of the tiles / illuminations / channels of
+        a view into one virtual view, by default `True`.
+    merge_distance : float, optional
+        Distance (px) below which grouped points are merged, by default `5`.
+    view_selection : str, optional
+        Which views to compare (choice without brackets), by default only
+        overlapping views.
+    point_selection : str, optional
+        Which points to compare (choice without brackets), by default all
+        points of overlapping views; `Only compare interest points that overlap
+        between views (according to current transformations)` restricts them
+        to the overlaps.
+    number_of_neighbors, redundancy, significance : int, optional
+        Descriptor parameters, by default `3`, `1` and `3`.
+    search_radius : float, optional
+        Only pair descriptors whose points are within this distance (px) under
+        the current transformations (`limit_search_radius`). By default `None`
+        (no limit).
+    ransac_options : str, optional
+        RANSAC options from `fmt_ransac_options()`, by default
+        `fmt_ransac_options()` (MVR defaults, 10,000 iterations).
+    strategy : str, optional
+        The global optimization strategy (without brackets), by default
+        `Two-Round: Handle unconnected tiles, remove wrong links RELAXED (5.0x
+        / 7.0px)`.
+    fix_views : str, optional
+        The `fix_views` choice, e.g. `Fix first view`, together with `Do not
+        map back (use this if views are fixed)`. By default `None` (dialog
+        default; with a single timepoint that is `Fix first view`).
+    pre_align : bool, optional
+        Pre-align the views before the global optimization, by default `True`
+        (MVR <= 7 always did; MVR >= 8 only if the `pre-align` key is given).
     """
 
     if not processing_opts:
@@ -1356,6 +1624,51 @@ def interest_points_registration(
         rigid_timepoints_arg = "consider_each_timepoint_as_rigid_unit "
     else:
         rigid_timepoints_arg = " "
+
+    if ransac_options is None:
+        ransac_options = fmt_ransac_options()
+
+    if regularize_with:
+        regularize = (
+            "regularize_model "
+            + "model_to_regularize_with="
+            + regularize_with
+            + " "
+            + "lambda="
+            + str(regularization_lambda)
+            + " "
+        )
+    else:
+        regularize = ""
+
+    grouping = (
+        ("group_tiles " if group_tiles else "")
+        + ("group_illuminations " if group_illuminations else "")
+        + ("group_channels " if group_channels else "")
+    )
+    if grouping:
+        grouping += (
+            "interestpoint_grouping=["
+            + "Group interest points (simply combine all in one virtual view)] "
+            + "interest="
+            + str(merge_distance)
+            + " "
+        )
+
+    if search_radius is not None:
+        radius = "limit_search_radius search_radius=" + str(search_radius) + " "
+    else:
+        radius = ""
+
+    if fix_views:
+        fix = (
+            "fix_views=["
+            + fix_views
+            + "] "
+            + "map_back_views=[Do not map back (use this if views are fixed)] "
+        )
+    else:
+        fix = ""
 
     options = (
         "select=["
@@ -1367,36 +1680,42 @@ def interest_points_registration(
         + "registration_over_time=["
         + "Match against one reference timepoint (no global optimization)] "
         + "registration_in_between_views=["
-        + "Only compare overlapping views (according to current transformations)] "
-        + "interest_point_inclusion=[Compare all interest point of overlapping views] "
-        + "interest_points=beads "
-        + "group_tiles "
-        + "group_illuminations "
-        + "group_channels "
+        + view_selection
+        + "] "
+        + "interest_point_inclusion=["
+        + point_selection
+        + "] "
+        + "interest_points="
+        + label
+        + " "
+        + grouping
         + "reference=1 "
         + rigid_timepoints_arg
-        + "transformation=Affine "
-        + "regularize_model "
-        + "model_to_regularize_with=Affine "
-        + "lambda=0.10 "
-        + "number_of_neighbors=3 "
-        + "redundancy=1 "
-        + "significance=3 "
-        + "search_radius=100 "
-        + "allowed_error_for_ransac=5 "
-        + "inlier_factor=3 "
-        + "ransac_iterations=Normal "
+        + fix
+        + "transformation="
+        + transformation
+        + " "
+        + regularize
+        + "number_of_neighbors="
+        + str(number_of_neighbors)
+        + " "
+        + "redundancy="
+        + str(redundancy)
+        + " "
+        + "significance="
+        + str(significance)
+        + " "
+        + radius
+        + ransac_options
         + "global_optimization_strategy=["
-        + "Two-Round: Handle unconnected tiles, "
-        + "remove wrong links RELAXED (5.0x / 7.0px)] "
-        + "interestpoint_grouping=["
-        + "Group interest points (simply combine all in one virtual view)] "
-        + "interest=5"
+        + strategy
+        + "] "
+        + ("pre-align" if pre_align else "")
     )
 
     log.debug("Interest points registration options: <%s>", options)
     # register using interest points
-    IJ.run("Register Dataset based on Interest Points", options)
+    run_command("Register Dataset based on Interest Points", options)
 
 
 def duplicate_transformations(
@@ -1488,12 +1807,51 @@ def duplicate_transformations(
     )
 
     log.debug("Transformation duplication options: <%s>", options)
-    IJ.run("Duplicate Transformations", str(options))
+    run_command("Duplicate Transformations", options)
 
     backup_xml_files(
         file_info["path"],
         "duplicate_transformation_" + transformation_type,
     )
+
+
+def export_choice(export):
+    """Get the `export=` value of "OME-ZARR/N5/HDF5 export using N5-API".
+
+    The choices depend on the MVR version: `N5`, `OME-ZARR` and `HDF5` in MVR
+    <= 8.1.2; `N5`, `OME-ZARR v3`, `OME-ZARR v2 (deprecated)` and `HDF5
+    (currently not supported)` in 9.x. Read from the installed MVR
+    (`N5ApiTools.exportOptions()`).
+
+    Parameters
+    ----------
+    export : {`N5`, `OME-ZARR`, `HDF5`}
+        The format.
+
+    Returns
+    -------
+    str
+        The choice in brackets, e.g. `[OME-ZARR v3]`.
+
+    Raises
+    ------
+    ValueError
+        If the installed MVR offers no (supported) choice for the format.
+    """
+    from net.preibisch.mvrecon.process.n5api import N5ApiTools
+
+    options = [str(o) for o in N5ApiTools.exportOptions()]
+    if export == "N5":
+        match = [o for o in options if o == "N5"]
+    elif export == "OME-ZARR":
+        match = [o for o in options if o.startswith("OME-ZARR") and "deprecated" not in o]
+    elif export == "HDF5":
+        match = [o for o in options if o == "HDF5"]
+    else:
+        match = []
+    if not match:
+        raise ValueError("No supported export option for %s in %s" % (export, options))
+    return "[" + match[0] + "]"
 
 
 def fuse_dataset(
@@ -1506,6 +1864,13 @@ def fuse_dataset(
     fusion_type="Avg, Blending",
     export="HDF5",
     compression="Zstandard",
+    bounding_box="All Views",
+    preserve_original=True,
+    non_rigid_label=None,
+    non_rigid_alpha=1.0,
+    non_rigid_cpd=10,
+    filename_addition=None,
+    output_basename=None,
 ):
     """Call BigStitcher's "Fuse Dataset" command.
 
@@ -1531,12 +1896,39 @@ def fuse_dataset(
         Interpolation to use during fusion, by default `[Linear Interpolation]`.
     pixel_type : str, optional
         Pixel type to use during fusion, by default `[16-bit unsigned integer]`.
-    export : str, optional
-        Format of the output fused image, by default `HDF5`.
+    export : {`HDF5`, `N5`, `OME-ZARR`, `TIFF`}, optional
+        Format of the output fused image, by default `HDF5`. HDF5 export is not
+        available in MVR 9.x (`ValueError`); N5 or OME-ZARR are the
+        replacements (parallel block writes, also much faster than HDF5).
     fusion_type : str, optional
         Type of fusion algorithm to use, by default `Avg, Blending`.
     compression : str, optional
-        Compression method to use when exporting as HDF5, by default `Zstandard`.
+        Unused: the "OME-ZARR/N5/HDF5 export using N5-API" dialog of MVR 8.1.2
+        and 9.x has no compression field (it writes Zstandard). Kept for
+        compatibility.
+    bounding_box : str, optional
+        Name of the bounding box to fuse (without brackets), by default `All
+        Views`.
+    preserve_original : bool, optional
+        Keep the anisotropy of the input (z in planes) at downsampling 1, by
+        default `True`. Ignored by MVR for downsampling > 1.
+    non_rigid_label : str, optional
+        Interest point label for a non-rigid fusion (moving least squares on
+        the stored correspondences). By default `None` (rigid). MVR fuses
+        views with fewer than 12 correspondences with their affine model. Note
+        (MVR 7.0.7 - 9.0.11): the non-rigid fusion ignores the minimum of the
+        bounding box (fuses world 0 .. max), and the label is only found if
+        every fused view has correspondences of it.
+    non_rigid_alpha : float, optional
+        Alpha of the moving least squares, by default `1.0`.
+    non_rigid_cpd : int, optional
+        Control point distance in output voxels, by default `10`.
+    filename_addition : str, optional
+        TIFF only: prefix of the file names (`<addition>_fused_tp_<t>_ch_<c>.tif`).
+        By default `None`, i.e. the project's base name.
+    output_basename : str, optional
+        HDF5 / N5 / OME-ZARR only: base name of the container and its XML. By
+        default `None`, i.e. `<project basename>_fused`.
     """
 
     if processing_opts is None:
@@ -1548,12 +1940,31 @@ def fuse_dataset(
         # if not os.path.exists(result_path):
         #     os.makedirs(result_path)
 
+    if non_rigid_label:
+        non_rigid = (
+            "interest_points_for_non_rigid=["
+            + non_rigid_label
+            + "] "
+            + "non_rigid_advanced_parameters "
+            + "alpha="
+            + str(non_rigid_alpha)
+            + " "
+            + "control_point_distance="
+            + str(non_rigid_cpd)
+            + " "
+        )
+    else:
+        non_rigid = "interest_points_for_non_rigid=[-= Disable Non-Rigid =-] "
+
     options = (
         "select=["
         + project_path
         + "] "
         + processing_opts.fmt_acitt_options()
-        + "bounding_box=[All Views] "
+        + processing_opts.fmt_acitt_selectors()
+        + "bounding_box=["
+        + bounding_box
+        + "] "
         + "downsampling="
         + str(downsampling)
         + " "
@@ -1566,12 +1977,14 @@ def fuse_dataset(
         + "pixel_type="
         + pixel_type
         + " "
-        + "interest_points_for_non_rigid=[-= Disable Non-Rigid =-] "
-        + "preserve_original "
+        + non_rigid
+        + ("preserve_original " if preserve_original else "")
         + "produce=[Each timepoint & channel] "
     )
 
     if export == "TIFF":
+        if filename_addition is None:
+            filename_addition = file_info["basename"]
         options = (
             options
             + "fused_image=[Save as (compressed) TIFF stacks] "
@@ -1580,29 +1993,33 @@ def fuse_dataset(
             + result_path
             + "/.] "
             + "filename_addition=["
-            + file_info["basename"]
+            + filename_addition
             + "]"
         )
-    elif export == "HDF5":
-        h5_fused_path = pathtools.join2(
-            result_path, file_info["basename"] + "_fused.h5"
-        )
-        xml_fused_path = pathtools.join2(
-            result_path, file_info["basename"] + "_fused.xml"
-        )
+    elif export in ("HDF5", "N5", "OME-ZARR"):
+        if output_basename is None:
+            output_basename = file_info["basename"] + "_fused"
+        extension = {"HDF5": ".h5", "N5": ".n5", "OME-ZARR": ".zarr"}[export]
+        path_key = {
+            "HDF5": "hdf5_file",
+            "N5": "n5_dataset_path",
+            "OME-ZARR": "zarr_dataset_path",
+        }[export]
+        data_path = pathtools.join2(result_path, output_basename + extension)
+        xml_fused_path = pathtools.join2(result_path, output_basename + ".xml")
 
         options = (
             options
             + "fused_image=[OME-ZARR/N5/HDF5 export using N5-API] "
             + "define_input=[Auto-load from input data (values shown below)] "
-            + "export=HDF5 "
-            + "compression="
-            + compression
+            + "export="
+            + export_choice(export)
             + " "
-            + "create "
-            + "create_0 "
-            + "hdf5_file=["
-            + h5_fused_path
+            + "create_a_bdv/bigstitcher "
+            + "create_multi-resolution "
+            + path_key
+            + "=["
+            + data_path
             + "] "
             + "xml_output_file=["
             + xml_fused_path
@@ -1615,9 +2032,11 @@ def fuse_dataset(
             + "block_size_factor_y=1 "
             + "block_size_factor_z=1"
         )
+    else:
+        raise ValueError("Unknown export format: %s" % export)
 
     log.debug("Dataset fusion options: <%s>", options)
-    IJ.run("Image Fusion", str(options))
+    run_command("Image Fusion", options)
 
 
 def fuse_dataset_bdvp(
