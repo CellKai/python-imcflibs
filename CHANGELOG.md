@@ -86,11 +86,17 @@ multiple modules. For detailed information, please refer to the
       `pre-align` key; default on, as MVR 7 always did).
   * `imcflibs.imagej.bdv.detect_interest_points`: new optional label,
       downsampling, fixed intensity range and grouping.
-  * `imcflibs.imagej.bdv.fuse_dataset`: N5 and OME-ZARR export, keys
-      `create_a_bdv/bigstitcher` and `create_multi-resolution` (were `create`
-      / `create_0`), processing selectors passed on, new optional bounding box,
-      `preserve_original`, non-rigid fusion, TIFF `filename_addition` and
-      output base name. HDF5 export is not available in MVR 9.x.
+  * `imcflibs.imagej.bdv.fuse_dataset`: the default export is now TIFF
+      (uncompressed; HDF5 export is not available in MVR 9.x and raises a
+      `ValueError`). N5 and OME-ZARR (v3) always create a BDV/BigStitcher XML
+      and a multi-resolution pyramid (keys `create_a_bdv/bigstitcher` and
+      `create_multi-resolution`, were `create` / `create_0`); optional
+      compression, block sizes, pyramid levels, sharding and single-container
+      settings. Compression and block sizes are always passed (MVR's initial
+      defaults), since MVR keeps the values of the previous fusion of the
+      session; the pyramid levels default to MVR's proposal. Processing
+      selectors are passed on; new optional bounding box, `preserve_original`, non-rigid
+      fusion, TIFF `filename_addition` and output base name.
   * `phase_correlation_pairwise_shifts_calculation`, `filter_pairwise_shifts`
       and `optimize_and_apply_shifts`: optional `backup_xml` (default `True`).
 * `imcflibs.imagej.bdv` can be imported without the PTBIOP update site: the

@@ -1846,7 +1846,7 @@ def fuse_dataset(
     interpolation="[Linear Interpolation]",
     pixel_type="[16-bit unsigned integer]",
     fusion_type="Avg, Blending",
-    export="HDF5",
+    export="TIFF",
     compression="Zstandard",
     bounding_box="All Views",
     preserve_original=True,
@@ -1855,13 +1855,26 @@ def fuse_dataset(
     non_rigid_cpd=10,
     filename_addition=None,
     output_basename=None,
+    block_size=(128, 128, 64),
+    block_size_factor=(2, 2, 2),
+    subsampling_factors="",
+    sharding=True,
+    single_container=True,
 ):
     """Call BigStitcher's "Fuse Dataset" command.
 
     Wrapper to `BigStitcher > Batch Processing > Fuse Dataset`.
 
     Depending on the export type, inputs are different and therefore will
-    distribute inputs differently.
+    distribute inputs differently. TIFF stacks are written uncompressed (one
+    file per timepoint and channel). N5 and OME-ZARR always get a
+    multi-resolution pyramid and a BDV/BigStitcher XML.
+
+    Note: MVR keeps the last values of its dialogs for the rest of the Fiji
+    session, so an option missing from the macro string is not MVR's default
+    but the value of the previous fusion. Compression and block sizes are
+    therefore always passed (defaults = MVR's initial values); only the pyramid
+    levels can be left to MVR, which proposes them for each fused image.
 
     Parameters
     ----------
@@ -1880,16 +1893,17 @@ def fuse_dataset(
         Interpolation to use during fusion, by default `[Linear Interpolation]`.
     pixel_type : str, optional
         Pixel type to use during fusion, by default `[16-bit unsigned integer]`.
-    export : {`HDF5`, `N5`, `OME-ZARR`, `TIFF`}, optional
-        Format of the output fused image, by default `HDF5`. HDF5 export is not
-        available in MVR 9.x (`ValueError`); N5 or OME-ZARR are the
-        replacements (parallel block writes, also much faster than HDF5).
+    export : {`TIFF`, `N5`, `OME-ZARR`}, optional
+        Format of the output fused image, by default `TIFF` (uncompressed;
+        MVR's "Save as (compressed) TIFF stacks" never compresses). `N5` and
+        `OME-ZARR` (OME-ZARR v3) write chunked containers in parallel. `HDF5`
+        is not available in MVR 9.x and raises a `ValueError`.
     fusion_type : str, optional
         Type of fusion algorithm to use, by default `Avg, Blending`.
     compression : str, optional
-        Unused: the "OME-ZARR/N5/HDF5 export using N5-API" dialog of MVR 9.x
-        has no compression field (it writes Zstandard). Kept for
-        compatibility.
+        N5 / OME-ZARR only: one of `Lz4`, `Gzip`, `Zstandard`, `Blosc`,
+        `Bzip2`, `Xz`, `Raw (no compression)`. By default `Zstandard` (MVR's
+        default).
     bounding_box : str, optional
         Name of the bounding box to fuse (without brackets), by default `All
         Views`.
@@ -1911,8 +1925,30 @@ def fuse_dataset(
         TIFF only: prefix of the file names (`<addition>_fused_tp_<t>_ch_<c>.tif`).
         By default `None`, i.e. the project's base name.
     output_basename : str, optional
-        HDF5 / N5 / OME-ZARR only: base name of the container and its XML. By
+        N5 / OME-ZARR only: base name of the container and its XML. By
         default `None`, i.e. `<project basename>_fused`.
+    block_size : list of int, optional
+        N5 / OME-ZARR only: block (chunk) size in X, Y and Z, by default
+        `(128, 128, 64)` (MVR's default). N5 writes one file per block.
+    block_size_factor : list of int, optional
+        N5 / OME-ZARR only: compute block size as a factor of the block size in
+        X, Y and Z; with OME-ZARR sharding also the shard size (one file per
+        shard). By default `(2, 2, 2)` (MVR's default).
+    subsampling_factors : str, optional
+        N5 / OME-ZARR only: downsampling factors of the pyramid levels, e.g.
+        `{ {1,1,1}, {2,2,1}, {4,4,2} }`. By default `""`, i.e. the levels
+        BigStitcher proposes for the size of the fused image (data dependent).
+    sharding : bool, optional
+        OME-ZARR only: group blocks into shards (fewer files), by default
+        `True` (BigStitcher's default).
+    single_container : bool, optional
+        OME-ZARR only: store channels and timepoints in a single OME-ZARR
+        container, by default `True` (BigStitcher's default).
+
+    Raises
+    ------
+    ValueError
+        If `export` is `HDF5` or unknown.
     """
 
     if processing_opts is None:
@@ -1980,15 +2016,11 @@ def fuse_dataset(
             + filename_addition
             + "]"
         )
-    elif export in ("HDF5", "N5", "OME-ZARR"):
+    elif export in ("N5", "OME-ZARR"):
         if output_basename is None:
             output_basename = file_info["basename"] + "_fused"
-        extension = {"HDF5": ".h5", "N5": ".n5", "OME-ZARR": ".zarr"}[export]
-        path_key = {
-            "HDF5": "hdf5_file",
-            "N5": "n5_dataset_path",
-            "OME-ZARR": "zarr_dataset_path",
-        }[export]
+        extension = {"N5": ".n5", "OME-ZARR": ".zarr"}[export]
+        path_key = {"N5": "n5_dataset_path", "OME-ZARR": "zarr_dataset_path"}[export]
         data_path = pathtools.join2(result_path, output_basename + extension)
         xml_fused_path = pathtools.join2(result_path, output_basename + ".xml")
 
@@ -2008,13 +2040,28 @@ def fuse_dataset(
             + "xml_output_file=["
             + xml_fused_path
             + "] "
-            + "show_advanced_block_size_options "
-            + "block_size_x=128 "
-            + "block_size_y=128 "
-            + "block_size_z=64 "
-            + "block_size_factor_x=1 "
-            + "block_size_factor_y=1 "
-            + "block_size_factor_z=1"
+        )
+        options = options + "compression=[" + compression + "] "
+        if export == "OME-ZARR":
+            # checkboxes missing from a macro are off, so the defaults are
+            # passed explicitly
+            options = (
+                options
+                + ("store_channels " if single_container else "")
+                + ("enable_sharding " if sharding else "")
+            )
+        options = options + (
+            "show_advanced_block_size_options "
+            + "block_size_x=%s block_size_y=%s block_size_z=%s " % tuple(block_size)
+            + "block_size_factor_x=%s block_size_factor_y=%s block_size_factor_z=%s "
+            % tuple(block_size_factor)
+        )
+        if subsampling_factors:
+            options = options + "subsampling_factors=[" + subsampling_factors + "] "
+    elif export == "HDF5":
+        raise ValueError(
+            "HDF5 export is not available in multiview-reconstruction 9.x, use "
+            "TIFF, N5 or OME-ZARR"
         )
     else:
         raise ValueError("Unknown export format: %s" % export)

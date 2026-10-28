@@ -243,8 +243,18 @@ def test_export_choice():
         bdv.export_choice("HDF5")
 
 
+def test_fuse_dataset_default_tiff(caplog):
+    """The default export is (uncompressed) TIFF named after the project."""
+    caplog.set_level(logging.WARNING)
+    bdv.fuse_dataset(XML, result_path="/data/fused")
+    call = last_call(caplog)
+    assert "fused_image=[Save as (compressed) TIFF stacks] " in call
+    assert "filename_addition=[dataset]" in call
+    assert "compression" not in call
+
+
 def test_fuse_dataset_n5(caplog):
-    """N5 export: BDV/BigStitcher XML and multi-resolution keys."""
+    """N5 export: always a BDV/BigStitcher XML and a pyramid, MVR defaults."""
     caplog.set_level(logging.WARNING)
     bdv.fuse_dataset(XML, result_path="/data/fused", export="N5", output_basename="out")
     call = last_call(caplog)
@@ -254,6 +264,60 @@ def test_fuse_dataset_n5(caplog):
     assert "xml_output_file=[/data/fused/out.xml] " in call
     assert "interest_points_for_non_rigid=[-= Disable Non-Rigid =-] " in call
     assert "preserve_original " in call
+    # MVR's initial defaults are always passed (the dialogs keep the values of
+    # the previous call); the pyramid levels are left to MVR
+    assert "compression=[Zstandard] " in call
+    assert (
+        "show_advanced_block_size_options "
+        + "block_size_x=128 block_size_y=128 block_size_z=64 "
+        + "block_size_factor_x=2 block_size_factor_y=2 block_size_factor_z=2 "
+    ) in call
+    assert "subsampling_factors" not in call
+    assert "sharding" not in call
+
+
+def test_fuse_dataset_n5_options(caplog):
+    """N5 export with compression, block sizes and pyramid levels."""
+    caplog.set_level(logging.WARNING)
+    bdv.fuse_dataset(
+        XML,
+        result_path="/data/fused",
+        export="N5",
+        compression="Raw (no compression)",
+        block_size=[64, 64, 32],
+        block_size_factor=[4, 4, 2],
+        subsampling_factors="{ {1,1,1}, {2,2,1} }",
+    )
+    call = last_call(caplog)
+    assert "compression=[Raw (no compression)] " in call
+    assert (
+        "show_advanced_block_size_options "
+        + "block_size_x=64 block_size_y=64 block_size_z=32 "
+        + "block_size_factor_x=4 block_size_factor_y=4 block_size_factor_z=2 "
+    ) in call
+    assert "subsampling_factors=[{ {1,1,1}, {2,2,1} }]" in call
+
+
+def test_fuse_dataset_ome_zarr(caplog):
+    """OME-ZARR v3: sharding and a single container unless switched off."""
+    caplog.set_level(logging.WARNING)
+    bdv.fuse_dataset(XML, result_path="/data/fused", export="OME-ZARR")
+    call = last_call(caplog)
+    assert "export=[OME-ZARR v3] " in call
+    assert "zarr_dataset_path=[/data/fused/dataset_fused.zarr] " in call
+    assert "store_channels enable_sharding " in call
+    bdv.fuse_dataset(
+        XML, result_path="/data/fused", export="OME-ZARR", sharding=False, single_container=False
+    )
+    call = last_call(caplog)
+    assert "store_channels" not in call
+    assert "enable_sharding" not in call
+
+
+def test_fuse_dataset_hdf5():
+    """HDF5 export is not available in MVR 9.x."""
+    with pytest.raises(ValueError):
+        bdv.fuse_dataset(XML, export="HDF5")
 
 
 def test_fuse_dataset_unknown_export():
