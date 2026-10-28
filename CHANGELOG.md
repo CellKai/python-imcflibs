@@ -93,6 +93,8 @@ multiple modules. For detailed information, please refer to the
       output base name. HDF5 export is not available in MVR 9.x.
   * `phase_correlation_pairwise_shifts_calculation`, `filter_pairwise_shifts`
       and `optimize_and_apply_shifts`: optional `backup_xml` (default `True`).
+* `imcflibs.imagej.bdv` can be imported without the PTBIOP update site: the
+    BIOP command is only imported in `fuse_dataset_bdvp`.
 
 #### `imcflibs.imagej.bioformats`
 
